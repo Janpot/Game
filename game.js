@@ -30,21 +30,23 @@ var initViewport = (function() {
   };
 })();
 
-var init = function () {
-  initViewport();
-};
-
-init();
-
-
-// create a point light
 var pointLight = new THREE.PointLight(0xFFFFFF);
-// set its position
-pointLight.position.x = 0;
-pointLight.position.y = 0;
-pointLight.position.z = 10;
-// add to the scene
-scene.add(pointLight);
+var hidden;
+
+var init = function() {
+  // set its position
+  pointLight.position.x = 0;
+  pointLight.position.y = 0;
+  pointLight.position.z = 10;
+  // add to the scene
+  scene.add(pointLight);
+
+  hidden = [];
+}
+
+initViewport();
+init();
+animate();
 
 var intersectXYPlane = function (ray, z) {
   z = z || 0;
@@ -90,12 +92,48 @@ var eachWall = function(fn) {
   }
 };
 
-var hidden = [];
+console.log(getVisibleFloor());
 
+// draw!
+var up = false, down = false, left = false, right = false;
+
+function animate() {
+  requestAnimationFrame(animate);
+
+  render();
+  //stats.update();
+}
+
+function render() {
+  initViewport();
+
+  var movement = world.player.getSpeed();
+
+  if (up) {
+    world.player.move(0, movement);
+  }
+  if (down) {
+    world.player.move(0, -movement);        
+  }
+  if (left) {
+    world.player.move(-movement, 0);
+  }
+  if (right) {
+    world.player.move(movement, 0);       
+  }
   
-var updateHidden = function () {
+  var pos = world.player.getPosition();
+  camera.position.x = pos.x;
+  camera.position.y = pos.y;
   
-  
+  pointLight.position.x = pos.x;
+  pointLight.position.y = pos.y;
+
+  updateHidden();
+  renderer.render(scene, camera);
+}
+
+function updateHidden() {
   var mat = new THREE.LineBasicMaterial({
         color: 0x0000ff,
     });
@@ -125,42 +163,7 @@ var updateHidden = function () {
   }
   console.log(world.walls[0].hides(world.enemies[0].getPosition()));
 };
-
-
-console.log(getVisibleFloor());
-
-// draw!
-
-var up = false, down = false, left = false, right = false;
-
-setInterval(function() {
-  initViewport();
-
-  var movement = world.player.getSpeed();
-
-  if (up) {
-    world.player.move(0, movement);
-  }
-  if (down) {
-    world.player.move(0, -movement);        
-  }
-  if (left) {
-    world.player.move(-movement, 0);
-  }
-  if (right) {
-    world.player.move(movement, 0);       
-  }
-  
-  var pos = world.player.getPosition();
-  camera.position.x = pos.x;
-  camera.position.y = pos.y;
-  
-  pointLight.position.x = pos.x;
-  pointLight.position.y = pos.y;
-  updateHidden();
-  renderer.render(scene, camera);    
-}, 10);
-            
+        
 function keyDown(e)
 {  
   var code = e.keyCode ? e.keyCode : e.which;
