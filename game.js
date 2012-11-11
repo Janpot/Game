@@ -40,21 +40,11 @@ var init = function() {
   pointLight.position.z = 10;
   // add to the scene
   scene.add(pointLight);
-
-  hidden = [];
 }
 
 initViewport();
 init();
 animate();
-
-var intersectXYPlane = function (ray, z) {
-  z = z || 0;
-  var t = (z - ray.origin.z) / ray.direction.z;
-  var x = ray.origin.x + ray.direction.x * t;
-  var y = ray.origin.y + ray.direction.y * t;
-  return new THREE.Vector3(x, y, z);
-};
 
 
 var getVisibleFloor = (function () {
@@ -70,27 +60,13 @@ var getVisibleFloor = (function () {
     var bottomLeftRay = p.pickingRay(bottomLeft, camera);
     var bottomRightRay = p.pickingRay(bottomRight, camera);
     return {
-      topLeft: intersectXYPlane(topLeftRay),
-      topRight: intersectXYPlane(topRightRay),
-      bottomLeft: intersectXYPlane(bottomLeftRay),
-      bottomRight: intersectXYPlane(bottomRightRay)
+      topLeft: Utils.intersectXYPlane(topLeftRay),
+      topRight: Utils.intersectXYPlane(topRightRay),
+      bottomLeft: Utils.intersectXYPlane(bottomLeftRay),
+      bottomRight: Utils.intersectXYPlane(bottomRightRay)
     };
   };
 }) ();
-
-var eachWall = function(fn) {
-  var result = [];
-  for (var i = 0; i < world.walls.length; i++) {
-    var wallPoly = world.walls[i];
-    for (var j = 0; j < wallPoly.corners.length ; j++) {
-      var wall = {
-        point1: wallPoly.corners[j],
-        point2: wallPoly.corners[(j + 1) % wallPoly.corners.length]
-      };
-      fn(wall);
-    }
-  }
-};
 
 // console.log(getVisibleFloor());
 
@@ -116,7 +92,6 @@ function animate() {
   requestAnimationFrame(animate);
 
   render();
-  //stats.update();
 }
 
 function render() {

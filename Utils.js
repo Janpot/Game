@@ -22,6 +22,14 @@ var Utils = (function () {
       var angleU = Utils.angleBetweenVector2(v1, u);
       var angleVectors = Utils.angleBetweenVector2(v1, v2);
       return angleVectors > 0 ? 0 < angleU && angleU < angleVectors : angleVectors < angleU && angleU < 0;
+    },
+    
+    intersectXYPlane: function (ray, z) {
+      z = z || 0;
+      var t = (z - ray.origin.z) / ray.direction.z;
+      var x = ray.origin.x + ray.direction.x * t;
+      var y = ray.origin.y + ray.direction.y * t;
+      return new THREE.Vector3(x, y, z);
     }
   
   }
