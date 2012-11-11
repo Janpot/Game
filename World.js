@@ -28,7 +28,11 @@ var World = function () {
                   
   this.player = new Player({
     position: {x: 10, y: 7}
-  });                
+  });        
+  
+  for (var i = 0; i < this.walls.length; i++) {
+    this.player.pushCollidable(this.walls[i].mesh);
+  }
   
   this.enemies = [];
   this.enemies.push(new Player({ 

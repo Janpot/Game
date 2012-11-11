@@ -37,7 +37,6 @@ var init = function () {
 init();
 
 
-
 // create a point light
 var pointLight = new THREE.PointLight(0xFFFFFF);
 // set its position
@@ -132,11 +131,13 @@ console.log(getVisibleFloor());
 
 // draw!
 
-var up = false, down = false, left = false, right = false;  
+var up = false, down = false, left = false, right = false;
 
 setInterval(function() {
   initViewport();
-  var movement = 2;
+
+  var movement = world.player.getSpeed();
+
   if (up) {
     world.player.move(0, movement);
   }
@@ -149,6 +150,7 @@ setInterval(function() {
   if (right) {
     world.player.move(movement, 0);       
   }
+  
   var pos = world.player.getPosition();
   camera.position.x = pos.x;
   camera.position.y = pos.y;
@@ -157,11 +159,10 @@ setInterval(function() {
   pointLight.position.y = pos.y;
   updateHidden();
   renderer.render(scene, camera);    
-}, 100);
+}, 10);
             
 function keyDown(e)
-{
-  
+{  
   var code = e.keyCode ? e.keyCode : e.which;
   if (code == 38)
     up = true;
