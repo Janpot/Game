@@ -1,6 +1,260 @@
-/*jslint vars: true, browser: true, devel: true, indent: 2 */
+var threeD = true;
+
+(function () {
+  
+  if (!threeD) return;
+
+var world = {
+    walls: [
+      {
+        points : [
+          new THREE.Vector2(100, 100),
+          new THREE.Vector2(250, 100),
+          new THREE.Vector2(300, 270),
+          new THREE.Vector2(200, 300),
+          new THREE.Vector2(200, 400)
+        ]
+      },
+      {
+        points : [
+          new THREE.Vector2(400, 150),
+          new THREE.Vector2(600, 100),
+          new THREE.Vector2(630, 270),
+          new THREE.Vector2(500, 450),
+          new THREE.Vector2(450, 400)
+        ]
+      }
+    ],
+    player: new Player()
+  };
+
+var canvas = document.querySelector('#viewport');
+var renderer = new THREE.WebGLRenderer({canvas: canvas});
+var scene = new THREE.Scene();
+
+// add a temporary aspect ratio of 1, will be reset by initViewport
+var camera = new THREE.PerspectiveCamera(45, 1, 0.1, 300);
+scene.add(camera);
+camera.position.z = camera.far;
+
+var initViewport = (function() {  
+  // variables to store previous state
+  var prevWidth, prevHeight;    
+  return function() {
+    // get the size
+    var width = document.body.clientWidth;
+    var height = document.body.clientHeight;
+    if (width != prevWidth || height != prevHeight) {
+      // only resize when size actually changes
+      var aspect = viewport.width / viewport.height;
+      renderer.setSize(width, height);
+      camera.aspect = width / height;
+      camera.updateProjectionMatrix();
+      prevWidth = width;
+      prevHeight = height;
+    }    
+  };
+})();
+
+var init = function () {
+  initViewport();
+};
+
+init();
 
 
+
+scene.add(world.player.mesh);
+
+for (var i = 0; i < world.walls.length; i++) {
+  var wall = new Wall(world.walls[i].points);
+  scene.add(wall.mesh);
+}
+
+
+
+// create a point light
+var pointLight =
+  new THREE.PointLight(0xFFFFFF);
+
+// set its position
+pointLight.position.x = 0;
+pointLight.position.y = 0;
+pointLight.position.z = 60;
+
+// add to the scene
+scene.add(pointLight);
+
+var intersectXYPlane = function (ray, z) {
+  z = z || 0;
+  var t = (z - ray.origin.z) / ray.direction.z;
+  var x = ray.origin.x + ray.direction.x * t;
+  var y = ray.origin.y + ray.direction.y * t;
+  return new THREE.Vector3(x, y, z);
+};
+
+var p = new THREE.Projector();
+camera.updateMatrixWorld();
+
+
+
+var getVisibleFloor = (function () {
+  var topLeft = new THREE.Vector3(-1, 1, -1);
+  var topRight = new THREE.Vector3(1, 1, -1);
+  var bottomLeft = new THREE.Vector3(-1, -1, -1);
+  var bottomRight = new THREE.Vector3(1, -1, -1);
+  return function () {
+    var topLeftRay = p.pickingRay(topLeft, camera);
+    var topRightRay = p.pickingRay(topRight, camera);
+    var bottomLeftRay = p.pickingRay(bottomLeft, camera);
+    var bottomRightRay = p.pickingRay(bottomRight, camera);
+    return {
+      topLeft: intersectXYPlane(topLeftRay),
+      topRight: intersectXYPlane(topRightRay),
+      bottomLeft: intersectXYPlane(bottomLeftRay),
+      bottomRight: intersectXYPlane(bottomRightRay)
+    };
+  };
+}) ();
+
+var eachWall = function(fn) {
+  var result = [];
+  for (var i = 0; i < world.walls.length; i++) {
+    var wallPoly = world.walls[i];
+    for (var j = 0; j < wallPoly.points.length ; j++) {
+      var wall = {
+        point1: wallPoly.points[j],
+        point2: wallPoly.points[(j + 1) % wallPoly.points.length]
+      };
+      fn(wall);
+    }
+  }
+};
+
+var sqr = function (x) { return x* x; };
+
+var hidden = [];
+
+var updateHidden = function () {
+  var mat = new THREE.LineBasicMaterial({
+        color: 0x0000ff,
+    });
+  
+  var i = 0;
+  var player = world.player.getPosition();
+  eachWall(function (wall) {
+    if (!hidden[i]) {
+      var geom = new THREE.Geometry();
+      hidden[i] = new THREE.Line(geom, mat);
+      scene.add(hidden[i]);
+    }
+    var geometry = hidden[i].geometry;    
+    var length = 2000;
+    var end1 = new THREE.Vector2().sub(wall.point1, player).normalize().multiplyScalar(length).addSelf(wall.point1);
+    var end2 = new THREE.Vector2().sub(wall.point2, player).normalize().multiplyScalar(length).addSelf(wall.point2);
+    geometry.vertices[0] = new THREE.Vector3(wall.point1.x, wall.point1.y, 0);
+    geometry.vertices[1] = new THREE.Vector3(end1.x, end1.y, 0);
+    geometry.verticesNeedUpdate = true;
+    i++;
+  });
+};
+
+
+console.log(getVisibleFloor());
+
+// draw!
+
+var up = false, down = false, left = false, right = false;  
+
+setInterval(function() {
+  initViewport();
+  var movement = 3;
+  if (up) {
+    world.player.move(0, movement);
+  }
+  if (down) {
+    world.player.move(0, -movement);        
+  }
+  if (left) {
+    world.player.move(-movement, 0);
+  }
+  if (right) {
+    world.player.move(movement, 0);       
+  }
+  var pos = world.player.getPosition();
+  camera.position.x = pos.x;
+  camera.position.y = pos.y;
+  
+  pointLight.position.x = pos.x;
+  pointLight.position.y = pos.y;
+  updateHidden();
+  renderer.render(scene, camera);    
+}, 20);
+            
+function keyDown(e)
+{
+  
+  var code = e.keyCode ? e.keyCode : e.which;
+  if (code == 38)
+    up = true;
+  if (code == 40)
+    down = true;
+  if (code == 37)
+    left = true;
+  if (code == 39)
+    right = true;
+}
+
+function keyUp(e)
+{
+  var code = e.keyCode ? e.keyCode : e.which;
+  if (code == 38)
+    up = false;
+  if (code == 40)
+    down = false;
+  if (code == 37)
+    left = false;
+  if (code == 39)
+    right = false;
+}
+    
+document.body.addEventListener('keyup', keyUp, false);
+document.body.addEventListener('keydown', keyDown, false);
+
+
+
+})();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+(function() {
+
+  if (threeD) return;
+  
 var width = 500;
 var height = 500;
 
@@ -274,3 +528,4 @@ document.body.addEventListener('keyup', keyUp, false);
 document.body.addEventListener('keydown', keyDown, false);
             
 render();
+})();
