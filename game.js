@@ -30,21 +30,23 @@ var initViewport = (function() {
   };
 })();
 
-var init = function () {
-  initViewport();
-};
-
-init();
-
-
-// create a point light
 var pointLight = new THREE.PointLight(0xFFFFFF);
-// set its position
-pointLight.position.x = 0;
-pointLight.position.y = 0;
-pointLight.position.z = 10;
-// add to the scene
-scene.add(pointLight);
+var hidden;
+
+var init = function() {
+  // set its position
+  pointLight.position.x = 0;
+  pointLight.position.y = 0;
+  pointLight.position.z = 10;
+  // add to the scene
+  scene.add(pointLight);
+
+  hidden = [];
+}
+
+initViewport();
+init();
+animate();
 
 var intersectXYPlane = function (ray, z) {
   z = z || 0;
@@ -90,18 +92,10 @@ var eachWall = function(fn) {
   }
 };
 
-var hidden = [];
+// console.log(getVisibleFloor());
 
-var isVisible = function (position) {
-  for (var i = 0; i < world.walls.length; i++) {
-    if (world.walls[i].hides(position)) {
-      return false;
-    }
-  }
-  return true;
-};
-  
-var updateHidden = function () {
+
+function updateHidden() {
   
   var playerPos = world.player.getPosition();
   for (var i = 0; i < world.walls.length; i++) {
@@ -110,19 +104,22 @@ var updateHidden = function () {
   
   for (var i = 0; i < world.enemies.length; i++) {
     var enemy = world.enemies[i];
-    enemy.mesh.visible = isVisible(enemy.getPosition());
+    enemy.mesh.visible = world.isVisible(enemy.getPosition());
   }
   
 };
 
-
-// console.log(getVisibleFloor());
-
 // draw!
-
 var up = false, down = false, left = false, right = false;
 
-setInterval(function() {
+function animate() {
+  requestAnimationFrame(animate);
+
+  render();
+  //stats.update();
+}
+
+function render() {
   initViewport();
 
   var movement = world.player.getSpeed();
@@ -146,9 +143,14 @@ setInterval(function() {
   
   pointLight.position.x = pos.x;
   pointLight.position.y = pos.y;
+
   updateHidden();
-  renderer.render(scene, camera);    
-}, 10);
+  renderer.render(scene, camera);
+}
+
+
+
+// console.log(getVisibleFloor());
             
 function keyDown(e)
 {  

@@ -80,3 +80,12 @@ World.prototype.init = function (scene) {
     scene.add(this.enemies[i].mesh);
   }
 };
+
+World.prototype.isVisible = function (position) {
+  for (var i = 0; i < this.walls.length; i++) {
+    if (this.walls[i].hides(position)) {
+      return false;
+    }
+  }
+  return true;
+};
