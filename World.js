@@ -66,6 +66,12 @@ World.prototype.init = function (scene) {
   
   for (var i = 0; i < world.walls.length; i++) {
     scene.add(this.walls[i].mesh);
+    
+    // debug
+    var rays = this.walls[i].hidingRays;
+    for (var j = 0; j < rays.length; j++) {
+      scene.add(rays[j]);
+    }
   }
   
   scene.add(this.player.mesh);

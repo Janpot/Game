@@ -34,8 +34,20 @@ var Wall = function (cfg) {
     })
   }
   
+  // debug
+  var mat = new THREE.LineBasicMaterial({
+    color: 0x0000ff,
+  });
+  this.hidingRays = [];
+  for (var i = 0; i < this.corners.length; i++) {
+    var geom = new THREE.Geometry();
+    geom.vertices[0] = new THREE.Vector3(0, 0, 0);
+    geom.vertices[1] = new THREE.Vector3(0, 0, 0);
+    this.hidingRays.push(new THREE.Line(geom, mat));
+  }
+  
 };
-
+  
 // set the position from where to calculate the hidden area
 Wall.prototype.setHidden = function (position) {
   for (var i = 0; i < this.hidden.length; i++) {
@@ -52,7 +64,18 @@ Wall.prototype.setHidden = function (position) {
       .subSelf(position)
       .normalize();
     
+    // update rays for debugging
+    var length = 2000;
+    this.hidingRays[i].geometry.vertices[0].set(ray1.origin.x, ray1.origin.y, 0);
+    var end = ray1.hiddenDir.clone().multiplyScalar(length).addSelf(ray1.origin);
+    this.hidingRays[i].geometry.vertices[1].set(end.x, end.y, 0);
+    this.hidingRays[i].geometry.verticesNeedUpdate = true;
   }
+  
+  
+  
+  
+  
   return this.hidden;
 };
 
@@ -60,17 +83,14 @@ Wall.prototype.setHidden = function (position) {
 Wall.prototype.hides = function(position) {
   for (var i = 0; i < this.hidden.length; i++) {
     var ray1 = this.hidden[i].ray1;
-    var ray2 = this.hidden[i].ray2;
-    
-    
+    var ray2 = this.hidden[i].ray2;    
     var pos1 = position.clone().subSelf(ray1.origin);
     var pos2 = position.clone().subSelf(ray2.origin);
-    if (i === 4){
-    console.log(pos1.dot(ray1.hiddenDir));
+    var inside1 = Utils.isBetweenVectors(ray1.wallDir, ray1.hiddenDir, pos1);
+    var inside2 = Utils.isBetweenVectors(ray2.wallDir, ray2.hiddenDir, pos2);
+    if (inside1 && inside2) {
+      return true;
     }
-    var hides1 = pos1.dot(ray1.wallDir) * pos1.dot(ray1.hiddenDir) > 0;
-    var hides2 = pos2.dot(ray2.wallDir) * pos1.dot(ray2.hiddenDir) > 0;
-    if (hides1 && hides2) return true;
   }
   return false;
 };

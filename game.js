@@ -7,7 +7,7 @@ var scene = new THREE.Scene();
 world.init(scene);
 
 // add a temporary aspect ratio of 1, will be reset by initViewport
-var camera = new THREE.PerspectiveCamera(45, 1, 0.1, 41);
+var camera = new THREE.PerspectiveCamera(45, 1, 0.1, 61);
 scene.add(camera);
 camera.position.z = camera.far - 1;
 
@@ -92,42 +92,31 @@ var eachWall = function(fn) {
 
 var hidden = [];
 
+var isVisible = function (position) {
+  for (var i = 0; i < world.walls.length; i++) {
+    if (world.walls[i].hides(position)) {
+      return false;
+    }
+  }
+  return true;
+};
   
 var updateHidden = function () {
   
-  
-  var mat = new THREE.LineBasicMaterial({
-        color: 0x0000ff,
-    });
-  
-  var length = 1000;
-  var k = 0;
-  
   var playerPos = world.player.getPosition();
   for (var i = 0; i < world.walls.length; i++) {
-    var hiddenAreas = world.walls[i].setHidden(playerPos);
-    
-    for (var j = 0; j < hiddenAreas.length; j++) {
-      var ray = hiddenAreas[j].ray1;
-      var end = ray.hiddenDir.clone().multiplyScalar(length).addSelf(ray.origin);
-      
-      if (!hidden[k]) {
-        var geom = new THREE.Geometry();
-        hidden[k] = new THREE.Line(geom, mat);
-        scene.add(hidden[k]);
-      }
-      var geometry = hidden[k].geometry; 
-      geometry.vertices[0] = new THREE.Vector3(ray.origin.x, ray.origin.y, 0);
-      geometry.vertices[1] = new THREE.Vector3(end.x, end.y, 0);
-      geometry.verticesNeedUpdate = true;
-      k++;
-    }
+    world.walls[i].setHidden(playerPos);
   }
-  console.log(world.walls[0].hides(world.enemies[0].getPosition()));
+  
+  for (var i = 0; i < world.enemies.length; i++) {
+    var enemy = world.enemies[i];
+    enemy.mesh.visible = isVisible(enemy.getPosition());
+  }
+  
 };
 
 
-console.log(getVisibleFloor());
+// console.log(getVisibleFloor());
 
 // draw!
 
