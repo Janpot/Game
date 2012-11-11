@@ -69,6 +69,8 @@ scene.add(world.player.mesh);
 for (var i = 0; i < world.walls.length; i++) {
   var wall = new Wall(world.walls[i].points);
   scene.add(wall.mesh);
+
+  world.player.pushCollidable(wall.mesh);
 }
 
 
@@ -164,11 +166,12 @@ console.log(getVisibleFloor());
 
 // draw!
 
-var up = false, down = false, left = false, right = false;  
+var up = false, down = false, left = false, right = false;
 
 setInterval(function() {
   initViewport();
-  var movement = 3;
+  var movement = world.player.getSpeed();
+
   if (up) {
     world.player.move(0, movement);
   }
@@ -181,6 +184,7 @@ setInterval(function() {
   if (right) {
     world.player.move(movement, 0);       
   }
+  
   var pos = world.player.getPosition();
   camera.position.x = pos.x;
   camera.position.y = pos.y;
@@ -192,8 +196,7 @@ setInterval(function() {
 }, 20);
             
 function keyDown(e)
-{
-  
+{  
   var code = e.keyCode ? e.keyCode : e.which;
   if (code == 38)
     up = true;
