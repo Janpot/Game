@@ -36,6 +36,8 @@ var initViewport = (function() {
 })();
 
 var pointLight = new THREE.PointLight(0xFFFFFF);
+var hidden;
+var stats;
 
 var init = function() {
   // set its position
@@ -44,6 +46,16 @@ var init = function() {
   pointLight.position.z = 10;
   // add to the scene
   scene.add(pointLight);
+
+  hidden = [];
+
+  // Stats library to get framerate
+  container = document.createElement( 'div' );
+  document.body.appendChild( container );
+  stats = new Stats();
+  stats.domElement.style.position = 'absolute';
+  stats.domElement.style.top = '0px';
+  container.appendChild( stats.domElement );
 }
 
 initViewport();
@@ -97,11 +109,11 @@ var up = false, down = false, left = false, right = false;
 function animate() {
   requestAnimationFrame(animate);
   render();
+  update();
+  stats.update();
 }
 
-
-
-function render() {
+function update() {
   initViewport();
 
   var movement = world.player.getSpeed();
@@ -116,6 +128,9 @@ function render() {
   pointLight.position.y = pos.y;
 
   world.updateHidden();
+}
+
+function render() {
   renderer.render(scene, camera);
   //renderer.clear();
   //composer.render();

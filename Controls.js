@@ -1,11 +1,14 @@
 // controls for a player
 var Controls = function (player, domElement) {
   
+  // affected player
+  this.player = player;
+  
+  // movement
   this.up = false;
   this.down = false;
   this.left = false;
   this.right = false;
-  this.player = player;
   
   var keyDown = function (e) {    
     var code = e.keyCode ? e.keyCode : e.which;
@@ -49,7 +52,8 @@ var Controls = function (player, domElement) {
   domElement.addEventListener('keydown', bind(this, keyDown), false);
     
 };
-    
+
+// update the player state according to the controls
 Controls.prototype.update = function (delta) {
   var movement = this.player.getSpeed();
   if (this.up) {
