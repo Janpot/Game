@@ -44,15 +44,15 @@ var World = function () {
     color: 0x0000FF
   }));
   
-  var floorGeom = new THREE.Geometry();
   
-  floorGeom.vertices.push(new THREE.Vector3(-2000, -2000, -0.01));  
-  floorGeom.vertices.push(new THREE.Vector3(2000, -2000, -0.01));
-  floorGeom.vertices.push(new THREE.Vector3(2000, 2000, -0.01));
-  floorGeom.vertices.push(new THREE.Vector3(-2000, 2000, -0.01));
-
-  floorGeom.faces.push(new THREE.Face4(0, 1, 2, 3));
-  this.floor = new THREE.Mesh(floorGeom, new THREE.MeshBasicMaterial({color: 0xA3E3D3}));
+  var shape = new THREE.Shape();
+  shape.fromPoints([
+    new THREE.Vector3(-2000, -2000, 0), 
+    new THREE.Vector3(2000, -2000, 0),
+    new THREE.Vector3(2000, 2000, 0),
+    new THREE.Vector3(-2000, 2000, 0)
+  ]);
+  this.floor = new THREE.Mesh(shape.extrude({amount: 0, bevelEnabled: false}), new THREE.MeshPhongMaterial({color: 0xA3E3D3}));
   
 };
 
@@ -76,8 +76,35 @@ World.prototype.init = function (scene) {
   
   scene.add(this.player.mesh);
   
-  for (var i = 0; i < world.enemies.length; i++) {
+  for (var i = 0; i < this.enemies.length; i++) {
     scene.add(this.enemies[i].mesh);
+  }
+};
+
+World.prototype.initHidingMask = function (scene) {
+  var hiddenMat = new THREE.MeshBasicMaterial({color: 0x000000});
+  var visibleMat = new THREE.MeshBasicMaterial({color: 0xffffff});
+  
+  var floor = this.floor.clone();
+  floor.material = visibleMat;
+  scene.add(floor);
+  
+  for (var i = 0; i < world.walls.length; i++) {
+    var hidingBlocks = this.walls[i].hidingBlocks;
+    for (var j = 0; j < hidingBlocks.length; j++) {
+      hidingBlocks[j].material = hiddenMat;
+      scene.add(hidingBlocks[j]);
+    }
+  }
+  
+  var player = this.player.mesh.clone();
+  player.material = visibleMat;
+  scene.add(player);
+  
+  for (var i = 0; i < world.enemies.length; i++) {
+    var enemy = this.enemies[i].mesh.clone();
+    enemy.material = visibleMat;
+    scene.add(enemy);
   }
 };
 
@@ -88,4 +115,16 @@ World.prototype.isVisible = function (position) {
     }
   }
   return true;
+};
+
+World.prototype.updateHidden = function () {
+  var playerPos = this.player.getPosition();
+  for (var i = 0; i < this.walls.length; i++) {
+    this.walls[i].setHidden(playerPos);
+  }
+  
+  for (var i = 0; i < world.enemies.length; i++) {
+    var enemy = this.enemies[i];
+    enemy.mesh.visible = this.isVisible(enemy.getPosition());
+  }
 };

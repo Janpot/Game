@@ -4,12 +4,17 @@ var world = new World();
 var canvas = document.querySelector('#viewport');
 var renderer = new THREE.WebGLRenderer({canvas: canvas});
 var scene = new THREE.Scene();
+var maskScene = new THREE.Scene();
 world.init(scene);
+world.initHidingMask(maskScene);
+
+
 
 // add a temporary aspect ratio of 1, will be reset by initViewport
-var camera = new THREE.PerspectiveCamera(45, 1, 0.1, 61);
+var camera = new THREE.PerspectiveCamera(45, 1, 0.1, 1000);
 scene.add(camera);
-camera.position.z = camera.far - 1;
+camera.position.z = 60;
+
 
 var initViewport = (function() {  
   // variables to store previous state
@@ -31,7 +36,6 @@ var initViewport = (function() {
 })();
 
 var pointLight = new THREE.PointLight(0xFFFFFF);
-var hidden;
 
 var init = function() {
   // set its position
@@ -44,6 +48,21 @@ var init = function() {
 
 initViewport();
 init();
+
+/*
+var renderPass = new THREE.RenderPass(scene, camera);
+//var maskPass = new THREE.MaskPass(maskScene, camera);
+renderPass.renderToScreen = true;
+
+var composer = new THREE.EffectComposer(renderer);
+composer.addPass(renderPass);
+//composer.addPass(maskPass);
+//renderer.render(scene, camera);
+renderer.clear();
+composer.render();*/
+
+var controls = new Controls(world.player, document);
+
 animate();
 
 
@@ -71,46 +90,23 @@ var getVisibleFloor = (function () {
 // console.log(getVisibleFloor());
 
 
-function updateHidden() {
-  
-  var playerPos = world.player.getPosition();
-  for (var i = 0; i < world.walls.length; i++) {
-    world.walls[i].setHidden(playerPos);
-  }
-  
-  for (var i = 0; i < world.enemies.length; i++) {
-    var enemy = world.enemies[i];
-    enemy.mesh.visible = world.isVisible(enemy.getPosition());
-  }
-  
-};
 
 // draw!
 var up = false, down = false, left = false, right = false;
 
 function animate() {
   requestAnimationFrame(animate);
-
   render();
 }
+
+
 
 function render() {
   initViewport();
 
   var movement = world.player.getSpeed();
 
-  if (up) {
-    world.player.move(0, movement);
-  }
-  if (down) {
-    world.player.move(0, -movement);        
-  }
-  if (left) {
-    world.player.move(-movement, 0);
-  }
-  if (right) {
-    world.player.move(movement, 0);       
-  }
+  controls.update();
   
   var pos = world.player.getPosition();
   camera.position.x = pos.x;
@@ -119,40 +115,8 @@ function render() {
   pointLight.position.x = pos.x;
   pointLight.position.y = pos.y;
 
-  updateHidden();
+  world.updateHidden();
   renderer.render(scene, camera);
+  //renderer.clear();
+  //composer.render();
 }
-
-
-
-// console.log(getVisibleFloor());
-            
-function keyDown(e)
-{  
-  var code = e.keyCode ? e.keyCode : e.which;
-  if (code == 38)
-    up = true;
-  if (code == 40)
-    down = true;
-  if (code == 37)
-    left = true;
-  if (code == 39)
-    right = true;
-}
-
-function keyUp(e)
-{
-  var code = e.keyCode ? e.keyCode : e.which;
-  if (code == 38)
-    up = false;
-  if (code == 40)
-    down = false;
-  if (code == 37)
-    left = false;
-  if (code == 39)
-    right = false;
-}
-    
-document.body.addEventListener('keyup', keyUp, false);
-document.body.addEventListener('keydown', keyDown, false);
-

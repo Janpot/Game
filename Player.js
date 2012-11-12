@@ -13,7 +13,7 @@ var Player = function (cfg) {
   }
   var material = new THREE.MeshPhongMaterial({ color: cfg.color });
   this.mesh = new THREE.Mesh(new THREE.SphereGeometry(0.5), material);
-  this.mesh.position.set(cfg.position.x, cfg.position.y, 0);
+  this.mesh.position.set(cfg.position.x, cfg.position.y, 0.5);
 
 };
 

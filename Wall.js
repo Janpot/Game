@@ -31,19 +31,28 @@ var Wall = function (cfg) {
         wallDir: corner1.clone().subSelf(corner2),
         hiddenDir: new THREE.Vector2(0, 0)
       }
-    })
+    });
   }
   
   // debug
   var mat = new THREE.LineBasicMaterial({
-    color: 0x0000ff,
+    color: 0x0000ff
   });
   this.hidingRays = [];
+  this.hidingBlocks = [];
   for (var i = 0; i < this.corners.length; i++) {
     var geom = new THREE.Geometry();
-    geom.vertices[0] = new THREE.Vector3(0, 0, 0);
-    geom.vertices[1] = new THREE.Vector3(0, 0, 0);
+    geom.vertices[0] = new THREE.Vector3(1, 0, 0);
+    geom.vertices[1] = new THREE.Vector3(1, 1, 0);
+    geom.vertices[2] = new THREE.Vector3(0, 1, 0);
+    geom.vertices[3] = new THREE.Vector3(0, 0, 0);
+    geom.vertices[4] = geom.vertices[0];
     this.hidingRays.push(new THREE.Line(geom, mat));
+    
+    var shape = new THREE.Shape(geom.vertices);
+    var mesh = new THREE.Mesh(shape.extrude({amount: 1000, bevelEnabled: false}), new THREE.MeshBasicMaterial({ color: 0x000000 }));
+    //mesh.doubleSided = true;
+    this.hidingBlocks.push(mesh);
   }
   
 };
@@ -65,16 +74,32 @@ Wall.prototype.setHidden = function (position) {
       .normalize();
     
     // update rays for debugging
-    var length = 2000;
-    this.hidingRays[i].geometry.vertices[0].set(ray1.origin.x, ray1.origin.y, 0);
-    var end = ray1.hiddenDir.clone().multiplyScalar(length).addSelf(ray1.origin);
-    this.hidingRays[i].geometry.vertices[1].set(end.x, end.y, 0);
+    var length = 1000;
+    var end1 = ray1.hiddenDir.clone().multiplyScalar(length).addSelf(ray1.origin);
+    var end2 = ray2.hiddenDir.clone().multiplyScalar(length).addSelf(ray2.origin);
+    
+    this.hidingRays[i].geometry.vertices[0].set(ray1.origin.x, ray1.origin.y, 0.01);    
+    this.hidingRays[i].geometry.vertices[1].set(end1.x, end1.y, 0.01);
+    this.hidingRays[i].geometry.vertices[2].set(end2.x, end2.y, 0.01);
+    this.hidingRays[i].geometry.vertices[3].set(ray2.origin.x, ray2.origin.y, 0.01); 
     this.hidingRays[i].geometry.verticesNeedUpdate = true;
+    
+    
+    
+    var block = this.hidingBlocks[i].geometry;
+    var height = 1000;
+    block.vertices[0].set(ray1.origin.x, ray1.origin.y, -height);    
+    block.vertices[1].set(end1.x, end1.y, -height);
+    block.vertices[2].set(end2.x, end2.y, -height);
+    block.vertices[3].set(ray2.origin.x, ray2.origin.y, -height); 
+    block.vertices[4].set(ray1.origin.x, ray1.origin.y, height);    
+    block.vertices[5].set(end1.x, end1.y, height);
+    block.vertices[6].set(end2.x, end2.y, height);
+    block.vertices[7].set(ray2.origin.x, ray2.origin.y, height); 
+    block.verticesNeedUpdate = true;
+  
+  
   }
-  
-  
-  
-  
   
   return this.hidden;
 };
