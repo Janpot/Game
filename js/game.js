@@ -107,13 +107,17 @@ var getVisibleFloor = (function () {
 var up = false, down = false, left = false, right = false;
 
 function animate() {
+  // TODO(Jan): requestAnimationFrame heeft geen vaste intervallen
+  // bereken tijdsverschil tussen twee frames om correcte updates te 
+  // kunnen doen
+  var delta;
   requestAnimationFrame(animate);
   render();
-  update();
+  update(delta);
   stats.update();
 }
 
-function update() {
+function update(delta) {
   initViewport();
 
   var movement = world.player.getSpeed();
