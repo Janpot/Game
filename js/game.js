@@ -102,10 +102,6 @@ var getVisibleFloor = (function () {
 // console.log(getVisibleFloor());
 
 
-
-// draw!
-var up = false, down = false, left = false, right = false;
-
 function animate() {
   // TODO(Jan): requestAnimationFrame heeft geen vaste intervallen
   // bereken tijdsverschil tussen twee frames om correcte updates te 
