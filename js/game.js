@@ -75,7 +75,49 @@ composer.render();*/
 
 var controls = new Controls(world.player, document);
 
+// get the time difference between two consecutive calls of this function
+var getDelta = (function () {
+  var lastCall = new Date().getTime();
+  return function () {
+    var now = new Date().getTime();
+    var delta = now - lastCall;
+    lastCall = now;
+    return delta;
+  };
+}) ();
+
 animate();
+
+function animate() {
+  var delta = getDelta();
+  requestAnimationFrame(animate);
+  render();
+  update(delta);
+  stats.update();
+}
+
+function update(delta) {
+  initViewport();
+
+  var movement = world.player.getSpeed();
+
+  controls.update(delta);
+  
+  var pos = world.player.getPosition();
+  camera.position.x = pos.x;
+  camera.position.y = pos.y;
+  
+  pointLight.position.x = pos.x;
+  pointLight.position.y = pos.y;
+
+  world.updateHidden();
+}
+
+function render() {
+  renderer.render(scene, camera);
+  //renderer.clear();
+  //composer.render();
+}
 
 
 var getVisibleFloor = (function () {
@@ -100,38 +142,3 @@ var getVisibleFloor = (function () {
 }) ();
 
 // console.log(getVisibleFloor());
-
-
-function animate() {
-  // TODO(Jan): requestAnimationFrame heeft geen vaste intervallen
-  // bereken tijdsverschil tussen twee frames om correcte updates te 
-  // kunnen doen
-  var delta;
-  requestAnimationFrame(animate);
-  render();
-  update(delta);
-  stats.update();
-}
-
-function update(delta) {
-  initViewport();
-
-  var movement = world.player.getSpeed();
-
-  controls.update();
-  
-  var pos = world.player.getPosition();
-  camera.position.x = pos.x;
-  camera.position.y = pos.y;
-  
-  pointLight.position.x = pos.x;
-  pointLight.position.y = pos.y;
-
-  world.updateHidden();
-}
-
-function render() {
-  renderer.render(scene, camera);
-  //renderer.clear();
-  //composer.render();
-}
