@@ -1,6 +1,6 @@
 # Fog of War game
 
-This is a browser game based on the notion of 'Fog of War', and principle that is well-known in RTS and RPG games, where the player can only see a portion of the playfield and unravels the parts by moving into the field.
+This is a browser game based on the notion of 'Fog of War', a principle that is well-known in RTS and RPG games, where the player can only see a portion of the playfield and unravels the parts by moving into the field.
 
 ## Features
 
