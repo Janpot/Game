@@ -55,18 +55,19 @@ var Controls = function (player, domElement) {
 
 // update the player state according to the controls
 Controls.prototype.update = function (delta) {
-  var movement = this.player.getSpeed();
+  var x = 0;
+  var y = 0;
   if (this.up) {
-    this.player.move(0, movement);
+    y += 1;
   }    
   if (this.down) {
-    this.player.move(0, -movement);        
+    y -= 1;
   }
   if (this.left) {
-    this.player.move(-movement, 0);
+    x -= 1;
   }
-  if (this.right) {
-    this.player.move(movement, 0);       
+  if (this.right) {  
+    x += 1;
   }
-  
+  this.player.walkDir.set(x, y).normalize();
 }

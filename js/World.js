@@ -27,7 +27,7 @@ var World = function () {
   );
                   
   this.player = new Player({
-    position: {x: 10, y: 7}
+    position: new THREE.Vector2(10, 7)
   });        
   
   for (var i = 0; i < this.walls.length; i++) {
@@ -36,11 +36,11 @@ var World = function () {
   
   this.enemies = [];
   this.enemies.push(new Player({ 
-    position: {x: 0, y: 10},
+    position: new THREE.Vector2(0, 10),
     color: 0x0000FF
   }));
   this.enemies.push(new Player({
-    position: {x: 35, y: 15},
+    position: new THREE.Vector2(35, 15),
     color: 0x0000FF
   }));
   
@@ -118,13 +118,12 @@ World.prototype.isVisible = function (position) {
 };
 
 World.prototype.updateHidden = function () {
-  var playerPos = this.player.getPosition();
   for (var i = 0; i < this.walls.length; i++) {
-    this.walls[i].setHidden(playerPos);
+    this.walls[i].setHidden(this.player.position);
   }
   
   for (var i = 0; i < world.enemies.length; i++) {
     var enemy = this.enemies[i];
-    enemy.mesh.visible = this.isVisible(enemy.getPosition());
+    enemy.mesh.visible = this.isVisible(enemy.position);
   }
 };

@@ -82,7 +82,7 @@ var getDelta = (function () {
     var now = new Date().getTime();
     var delta = now - lastCall;
     lastCall = now;
-    return delta;
+    return delta / 1000; //s
   };
 }) ();
 
@@ -99,11 +99,10 @@ function animate() {
 function update(delta) {
   initViewport();
 
-  var movement = world.player.getSpeed();
-
   controls.update(delta);
+  world.player.update(delta);
   
-  var pos = world.player.getPosition();
+  var pos = world.player.position;
   camera.position.x = pos.x;
   camera.position.y = pos.y;
   
