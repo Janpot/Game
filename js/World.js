@@ -117,6 +117,7 @@ World.prototype.isVisible = function (position) {
   return true;
 };
 
+// update the world with a timeframe of delta
 World.prototype.update = function (delta) {
   this.player.update(delta);
   this.updateHidden()

@@ -20,18 +20,27 @@ var Player = function (cfg) {
     cfg.color = 0xCC0000;
   }
   var material = new THREE.MeshPhongMaterial({ color: cfg.color });
-  this.mesh = new THREE.Mesh(new THREE.SphereGeometry(0.5), material);
-  this.mesh.position.set(this.position.x, this.position.y, 0.5);
+  var shape = new THREE.Shape();
+  shape.fromPoints([
+    new THREE.Vector3(0, 1, 0), 
+    new THREE.Vector3(-0.5, -0.5, 0),
+    new THREE.Vector3(0.5, -0.5, 0)
+  ]);  
+  this.mesh = new THREE.Mesh(shape.extrude({amount: 1, bevelEnabled: false}), material);
   
+  this.mesh.position.set(this.position.x, this.position.y, 0.5);
   
 };
 
+// Update player state with a timeframe of delta
 Player.prototype.update = function(delta) {
   this.updatePosition(delta);
   this.mesh.position.set(this.position.x, this.position.y, 0.5);  
+  var angle = Utils.angleBetweenVector2(new THREE.Vector2(1, 0), this.lookDir) - Math.PI/2;  
+  this.mesh.rotation.set(0,0,angle);  
 };
 
-
+// Update player position with a timeframe of delta
 Player.prototype.updatePosition = function (delta) {
   
   var nextPos = this.walkDir.clone()

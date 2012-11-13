@@ -1,5 +1,8 @@
 // controls for a player
-var Controls = function (player, domElement) {
+var Controls = function (player, camera) {
+  
+  this.width = 0;
+  this.height = 0;
   
   // affected player
   this.player = player;
@@ -42,15 +45,33 @@ var Controls = function (player, domElement) {
     }
   };
   
+  var p = new THREE.Projector();
+  var screenCoor = new THREE.Vector2(0, 0);  
+  var mouseMove = function (e) {
+    screenCoor.set(
+      (2 * e.clientX - this.width) / this.width,
+      (this.height - 2 * e.clientY) / this.height
+    );
+    var ray = p.pickingRay(screenCoor, camera);
+    var worldMousePos = Utils.intersectXYPlane(ray);
+    this.player.lookDir = worldMousePos.subSelf(this.player.position).normalize();
+  };
+  
   var bind = function (scope, fn) {
     return function () {
       fn.apply(scope, arguments)
     }
   }
       
-  domElement.addEventListener('keyup', bind(this, keyUp), false);
-  domElement.addEventListener('keydown', bind(this, keyDown), false);
-    
+  window.addEventListener('keyup', bind(this, keyUp), false);
+  window.addEventListener('keydown', bind(this, keyDown), false);  
+  window.addEventListener('mousemove', bind(this, mouseMove), false);
+};
+
+// Set the proper size of this object to calculate the mouseposition
+Controls.prototype.setSize = function (width, height) {
+  this.width = width;
+  this.height = height;
 };
 
 // update the player state according to the controls

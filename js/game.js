@@ -15,6 +15,7 @@ var camera = new THREE.PerspectiveCamera(45, 1, 0.1, 1000);
 scene.add(camera);
 camera.position.z = 60;
 
+var controls = new Controls(world.player, camera);
 
 var initViewport = (function() {  
   // variables to store previous state
@@ -27,6 +28,7 @@ var initViewport = (function() {
       // only resize when size actually changes
       var aspect = viewport.width / viewport.height;
       renderer.setSize(width, height);
+      controls.setSize(width, height);
       camera.aspect = width / height;
       camera.updateProjectionMatrix();
       prevWidth = width;
@@ -73,7 +75,7 @@ composer.addPass(renderPass);
 renderer.clear();
 composer.render();*/
 
-var controls = new Controls(world.player, document);
+
 
 // get the time difference between two consecutive calls of this function
 var getDelta = (function () {

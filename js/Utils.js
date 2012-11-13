@@ -24,12 +24,11 @@ var Utils = (function () {
       return angleVectors > 0 ? 0 < angleU && angleU < angleVectors : angleVectors < angleU && angleU < 0;
     },
     
-    intersectXYPlane: function (ray, z) {
-      z = z || 0;
-      var t = (z - ray.origin.z) / ray.direction.z;
+    intersectXYPlane: function (ray) {
+      var t = - ray.origin.z / ray.direction.z;
       var x = ray.origin.x + ray.direction.x * t;
       var y = ray.origin.y + ray.direction.y * t;
-      return new THREE.Vector3(x, y, z);
+      return new THREE.Vector2(x, y);
     }
   
   }
