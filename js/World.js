@@ -117,6 +117,11 @@ World.prototype.isVisible = function (position) {
   return true;
 };
 
+World.prototype.update = function (delta) {
+  this.player.update(delta);
+  this.updateHidden()
+};
+
 World.prototype.updateHidden = function () {
   for (var i = 0; i < this.walls.length; i++) {
     this.walls[i].setHidden(this.player.position);

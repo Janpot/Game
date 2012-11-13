@@ -27,6 +27,12 @@ var Player = function (cfg) {
 };
 
 Player.prototype.update = function(delta) {
+  this.updatePosition(delta);
+  this.mesh.position.set(this.position.x, this.position.y, 0.5);  
+};
+
+
+Player.prototype.updatePosition = function (delta) {
   
   var nextPos = this.walkDir.clone()
                             .multiplyScalar(this.speed * delta)
@@ -49,13 +55,11 @@ Player.prototype.update = function(delta) {
   }
   
   // END TODO
-  
-  this.mesh.position.set(this.position.x, this.position.y, 0.5);  
 };
 
 Player.prototype.pushCollidable = function(obj) {
   this.collidableObjs.push(obj);
-}
+};
 
 Player.prototype.detectCollision = function(delta) {
   // Loop all geometry vertices of the player mesh
@@ -73,4 +77,4 @@ Player.prototype.detectCollision = function(delta) {
   }
 
   return false;
-}
+};

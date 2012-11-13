@@ -100,7 +100,7 @@ function update(delta) {
   initViewport();
 
   controls.update(delta);
-  world.player.update(delta);
+  world.update(delta);
   
   var pos = world.player.position;
   camera.position.x = pos.x;
@@ -108,8 +108,6 @@ function update(delta) {
   
   pointLight.position.x = pos.x;
   pointLight.position.y = pos.y;
-
-  world.updateHidden();
 }
 
 function render() {
