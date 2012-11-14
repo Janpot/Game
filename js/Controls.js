@@ -97,7 +97,6 @@ Controls.prototype.update = function (delta) {
   this.world.player.walkDir.set(x, y)
                            .normalize();
   
-  this.world.player.lookDir.copy(this.worldMousePos)
-                           .subSelf(this.world.player.position)
-                           .normalize();
+  this.world.player.target.copy(this.worldMousePos);
+  
 }

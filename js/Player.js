@@ -16,6 +16,9 @@ var Player = function (cfg) {
   // Direction the player is looking at (normalized)
   this.lookDir = new THREE.Vector2(0, 0);
   
+  // Point the player is looking at
+  this.target = new THREE.Vector2(0, 0);
+  
   if (cfg.color === undefined) {
     cfg.color = 0xCC0000;
   }
@@ -35,7 +38,12 @@ var Player = function (cfg) {
 // Update player state with a timeframe of delta
 Player.prototype.update = function(delta) {
   this.updatePosition(delta);
-  this.mesh.position.set(this.position.x, this.position.y, 0.5);  
+  this.mesh.position.set(this.position.x, this.position.y, 0.5); 
+  
+  this.lookDir.copy(this.target)
+              .subSelf(this.position)
+              .normalize();
+  
   var angle = Utils.angleBetweenVector2(new THREE.Vector2(1, 0), this.lookDir);  
   this.mesh.rotation.set(0, 0, angle);  
 };
