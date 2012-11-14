@@ -1,31 +1,36 @@
 // controls for a player
-var Controls = function (player, camera) {
+var Controls = function (world, camera) {
   
   this.width = 0;
   this.height = 0;
   
   // affected player
-  this.player = player;
+  this.world = world;
   
   // movement
   this.up = false;
   this.down = false;
   this.left = false;
   this.right = false;
+  this.worldMousePos = new THREE.Vector2(0, 0);
   
   var keyDown = function (e) {    
     var code = e.keyCode ? e.keyCode : e.which;
     if (code === 38) {
       this.up = true;
+      this.down = false;
     }
     if (code === 40) {
       this.down = true;
+      this.up = false;
     }
     if (code === 37) {
       this.left = true;
+      this.right = false;
     }
     if (code === 39) {
       this.right = true;
+      this.left = false;
     }
   };
   
@@ -53,8 +58,7 @@ var Controls = function (player, camera) {
       (this.height - 2 * e.clientY) / this.height
     );
     var ray = p.pickingRay(screenCoor, camera);
-    var worldMousePos = Utils.intersectXYPlane(ray);
-    this.player.lookDir = worldMousePos.subSelf(this.player.position).normalize();
+    this.worldMousePos = Utils.intersectXYPlane(ray);    
   };
   
   var bind = function (scope, fn) {
@@ -90,5 +94,10 @@ Controls.prototype.update = function (delta) {
   if (this.right) {  
     x += 1;
   }
-  this.player.walkDir.set(x, y).normalize();
+  this.world.player.walkDir.set(x, y)
+                           .normalize();
+  
+  this.world.player.lookDir.copy(this.worldMousePos)
+                           .subSelf(this.world.player.position)
+                           .normalize();
 }

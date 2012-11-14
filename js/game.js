@@ -15,7 +15,7 @@ var camera = new THREE.PerspectiveCamera(45, 1, 0.1, 1000);
 scene.add(camera);
 camera.position.z = 60;
 
-var controls = new Controls(world.player, camera);
+var controls = new Controls(world, camera);
 
 var initViewport = (function() {  
   // variables to store previous state
