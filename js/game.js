@@ -79,9 +79,9 @@ composer.render();*/
 
 // get the time difference between two consecutive calls of this function
 var getDelta = (function () {
-  var lastCall = new Date().getTime();
+  var lastCall = Date.now();
   return function () {
-    var now = new Date().getTime();
+    var now = Date.now();
     var delta = now - lastCall;
     lastCall = now;
     return delta / 1000; //s

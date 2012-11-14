@@ -13,6 +13,8 @@ var Controls = function (world, camera) {
   this.left = false;
   this.right = false;
   this.worldMousePos = new THREE.Vector2(0, 0);
+  this.leftMouseBtn = false;
+  this.rightMouseBtn = false;
   
   var keyDown = function (e) {    
     var code = e.keyCode ? e.keyCode : e.which;
@@ -50,15 +52,43 @@ var Controls = function (world, camera) {
     }
   };
   
-  var p = new THREE.Projector();
+  var projector = new THREE.Projector();
   var screenCoor = new THREE.Vector2(0, 0);  
   var mouseMove = function (e) {
+    // convert mouse coordinates to [-1, 1] range
     screenCoor.set(
       (2 * e.clientX - this.width) / this.width,
       (this.height - 2 * e.clientY) / this.height
     );
-    var ray = p.pickingRay(screenCoor, camera);
+    // find the world coordinates
+    var ray = projector.pickingRay(screenCoor, camera);
     this.worldMousePos = Utils.intersectXYPlane(ray);    
+  };
+  
+  var mouseDown = function (e) {
+    if (e.button === 0) {
+      //left
+      this.leftMouseBtn = true;
+    }
+    if (e.button === 2) {
+      //right
+      this.rightMouseBtn = true;
+    }
+  };
+  
+  var mouseUp = function (e) {
+    if (e.button === 0) {
+      //left
+      this.leftMouseBtn = false;
+    }
+    if (e.button === 2) {
+      //right
+      this.rightMouseBtn = false;
+    }
+  };
+  
+  var onContextMenu = function (e) {
+    e.preventDefault();
   };
   
   var bind = function (scope, fn) {
@@ -70,6 +100,9 @@ var Controls = function (world, camera) {
   window.addEventListener('keyup', bind(this, keyUp), false);
   window.addEventListener('keydown', bind(this, keyDown), false);  
   window.addEventListener('mousemove', bind(this, mouseMove), false);
+  window.addEventListener('mousedown', bind(this, mouseDown), false);
+  window.addEventListener('mouseup', bind(this, mouseUp), false);
+  window.addEventListener('contextmenu', bind(this, onContextMenu), false);
 };
 
 // Set the proper size of this object to calculate the mouseposition
@@ -78,7 +111,7 @@ Controls.prototype.setSize = function (width, height) {
   this.height = height;
 };
 
-// update the player state according to the controls
+// update the world state according to the controls
 Controls.prototype.update = function (delta) {
   var x = 0;
   var y = 0;
