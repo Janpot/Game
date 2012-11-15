@@ -35,6 +35,12 @@
         new THREE.CubeGeometry(30, 30, 30), 
         new THREE.MeshPhongMaterial({color: 0xFF0000}));
       scene.add(cube);
+      cube.position.set(10, 5, 0);
+      
+      var cube2 = new THREE.Mesh(
+        new THREE.CubeGeometry(10, 10, 10), 
+        new THREE.MeshBasicMaterial({color: 0x000000}));
+      scene.add(cube2);
       
       var camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
       camera.position = new THREE.Vector3(60, 60, 60);
@@ -45,15 +51,30 @@
       var pointLight = new THREE.PointLight(0xFFFFFF);
       pointLight.position = new THREE.Vector3(100, 80, 20);
       scene.add(pointLight);
-      
+      /*
       var renderPass = new THREE.RenderPass(scene, camera);
       renderPass.renderToScreen = true;      
       var composer = new THREE.EffectComposer(renderer);
       composer.addPass(renderPass);
       renderer.clear();
-      composer.render();
-      
-      //renderer.render(scene, camera);
+      composer.render();*/
+      cube.visible = false;
+      renderer.autoClearStencil = false;
+      renderer.autoClear = false;
+      var ctx = renderer.context;
+      ctx.colorMask( false, false, false, false );
+      ctx.depthMask( false );
+      ctx.enable( ctx.STENCIL_TEST );
+      ctx.stencilOp( ctx.REPLACE, ctx.REPLACE, ctx.REPLACE );
+      ctx.stencilFunc( ctx.ALWAYS, 1, 0xffffffff );
+      ctx.clearStencil( 0 );
+      renderer.render(scene, camera);
+      ctx.colorMask( true, true, true, true );
+      ctx.depthMask( true );
+      cube.visible = true;
+      ctx.stencilFunc( ctx.EQUAL, 0, 0xffffffff );  // draw if == 1
+      ctx.stencilOp( ctx.KEEP, ctx.KEEP, ctx.KEEP );
+      renderer.render(scene, camera);
     </script>
   </body>
 </html>
