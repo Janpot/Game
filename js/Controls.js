@@ -8,29 +8,40 @@ var Controls = function (world, camera) {
   this.world = world;
   
   // movement
+  this.upPressed = false;
+  this.downPressed = false;
+  this.leftPressed = false;
+  this.rightPressed = false;
   this.up = false;
   this.down = false;
   this.left = false;
   this.right = false;
-  this.worldMousePos = new THREE.Vector2(0, 0);
+  this.mousePos = new THREE.Vector2(0, 0);
   this.leftMouseBtn = false;
   this.rightMouseBtn = false;
+  
+  this._projector = new THREE.Projector();
+  this.camera = camera;
   
   var keyDown = function (e) {    
     var code = e.keyCode ? e.keyCode : e.which;
     if (code === 38) {
+      this.upPressed = true;
       this.up = true;
       this.down = false;
     }
     if (code === 40) {
+      this.downPressed = true;
       this.down = true;
       this.up = false;
     }
     if (code === 37) {
+      this.leftPressed = true;
       this.left = true;
       this.right = false;
     }
     if (code === 39) {
+      this.rightPressed = true;
       this.right = true;
       this.left = false;
     }
@@ -39,30 +50,35 @@ var Controls = function (world, camera) {
   var keyUp = function (e) {    
     var code = e.keyCode ? e.keyCode : e.which;
     if (code === 38) {
+      this.upPressed = false;
       this.up = false;
+      this.down = this.downPressed;
     }
     if (code === 40) {
+      this.downPressed = false;
       this.down = false;
+      this.up = this.upPressed;
     }
     if (code === 37) {
+      this.leftPressed = false;
       this.left = false;
+      this.right = this.rightPressed
     }
     if (code === 39) {
+      this.rightPressed = false;
       this.right = false;
+      this.left = this.leftPressed;
     }
   };
   
-  var projector = new THREE.Projector();
-  var screenCoor = new THREE.Vector2(0, 0);  
+  
   var mouseMove = function (e) {
     // convert mouse coordinates to [-1, 1] range
-    screenCoor.set(
+    this.mousePos.set(
       (2 * e.clientX - this.width) / this.width,
       (this.height - 2 * e.clientY) / this.height
     );
-    // find the world coordinates
-    var ray = projector.pickingRay(screenCoor, camera);
-    this.worldMousePos = Utils.intersectXYPlane(ray);    
+    
   };
   
   var mouseDown = function (e) {
@@ -87,6 +103,7 @@ var Controls = function (world, camera) {
     }
   };
   
+  // suppress the contextmenu
   var onContextMenu = function (e) {
     e.preventDefault();
   };
@@ -130,6 +147,9 @@ Controls.prototype.update = function (delta) {
   this.world.player.walkDir.set(x, y)
                            .normalize();
   
-  this.world.player.target.copy(this.worldMousePos);
+  // find the world coordinates
+  // pickingray mutates vector so clone()
+  var ray = this._projector.pickingRay(this.mousePos.clone(), this.camera);
+  this.world.player.target = Utils.intersectXYPlane(ray); 
   
 }
