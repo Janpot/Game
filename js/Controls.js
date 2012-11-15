@@ -4,7 +4,6 @@ var Controls = function (world, camera) {
   this.width = 0;
   this.height = 0;
   
-  // affected player
   this.world = world;
   
   // movement
@@ -12,10 +11,7 @@ var Controls = function (world, camera) {
   this.downPressed = false;
   this.leftPressed = false;
   this.rightPressed = false;
-  this.up = false;
-  this.down = false;
-  this.left = false;
-  this.right = false;
+  this.arrowDirection = new THREE.Vector2(0, 0);
   this.mousePos = new THREE.Vector2(0, 0);
   this.leftMouseBtn = false;
   this.rightMouseBtn = false;
@@ -25,49 +21,53 @@ var Controls = function (world, camera) {
   
   var keyDown = function (e) {    
     var code = e.keyCode ? e.keyCode : e.which;
-    if (code === 38) {
-      this.upPressed = true;
-      this.up = true;
-      this.down = false;
-    }
-    if (code === 40) {
-      this.downPressed = true;
-      this.down = true;
-      this.up = false;
-    }
-    if (code === 37) {
-      this.leftPressed = true;
-      this.left = true;
-      this.right = false;
-    }
-    if (code === 39) {
-      this.rightPressed = true;
-      this.right = true;
-      this.left = false;
+    switch (code) {
+      case 38: // up
+      case 87: // W
+        this.upPressed = true;
+        this.arrowDirection.y = 1;
+        break;
+      case 40: // down
+      case 83: // S
+        this.downPressed = true;
+        this.arrowDirection.y = -1;
+        break;
+      case 37: // left
+      case 65: // A
+        this.leftPressed = true;
+        this.arrowDirection.x = -1;
+        break;
+      case 39: // right
+      case 68: // D
+        this.rightPressed = true;        
+        this.arrowDirection.x = 1;
+        break;        
     }
   };
   
   var keyUp = function (e) {    
     var code = e.keyCode ? e.keyCode : e.which;
-    if (code === 38) {
-      this.upPressed = false;
-      this.up = false;
-      this.down = this.downPressed;
-    }
-    if (code === 40) {
-      this.downPressed = false;
-      this.down = false;
-      this.up = this.upPressed;
-    }
-    if (code === 37) {
-      this.leftPressed = false;
-      this.left = false;
-      this.right = this.rightPressed
-    }
-    if (code === 39) {
-      this.rightPressed = false;
-      this.right = false;
-      this.left = this.leftPressed;
+    switch (code) {
+      case 38: // up
+      case 87: // W
+        this.upPressed = false;
+        this.arrowDirection.y = this.downPressed ? -1 : 0;
+        break;
+      case 40: // down
+      case 83: // S
+        this.downPressed = false;        
+        this.arrowDirection.y = this.upPressed ? 1 : 0;
+        break;
+      case 37: // left
+      case 65: // A
+        this.leftPressed = false;
+        this.arrowDirection.x = this.rightPressed ? 1 : 0;
+        break;
+      case 39: // right
+      case 68: // D
+        this.rightPressed = false;
+        this.arrowDirection.x = this.leftPressed ? -1 : 0;
+        break;        
     }
   };
   
@@ -77,29 +77,28 @@ var Controls = function (world, camera) {
     this.mousePos.set(
       (2 * e.clientX - this.width) / this.width,
       (this.height - 2 * e.clientY) / this.height
-    );
-    
+    );    
   };
   
   var mouseDown = function (e) {
-    if (e.button === 0) {
-      //left
-      this.leftMouseBtn = true;
-    }
-    if (e.button === 2) {
-      //right
-      this.rightMouseBtn = true;
+    switch (e.button) {
+      case 0: // left
+        this.leftMouseBtn = true;
+        break;
+      case 2: // right
+        this.rightMouseBtn = true;
+        break;
     }
   };
   
   var mouseUp = function (e) {
-    if (e.button === 0) {
-      //left
-      this.leftMouseBtn = false;
-    }
-    if (e.button === 2) {
-      //right
-      this.rightMouseBtn = false;
+    switch (e.button) {
+      case 0: // left
+        this.leftMouseBtn = false;
+        break;
+      case 2: // right
+        this.rightMouseBtn = false;
+        break;
     }
   };
   
@@ -111,8 +110,8 @@ var Controls = function (world, camera) {
   var bind = function (scope, fn) {
     return function () {
       fn.apply(scope, arguments)
-    }
-  }
+    };
+  };
       
   window.addEventListener('keyup', bind(this, keyUp), false);
   window.addEventListener('keydown', bind(this, keyDown), false);  
@@ -130,26 +129,12 @@ Controls.prototype.setSize = function (width, height) {
 
 // update the world state according to the controls
 Controls.prototype.update = function (delta) {
-  var x = 0;
-  var y = 0;
-  if (this.up) {
-    y += 1;
-  }    
-  if (this.down) {
-    y -= 1;
-  }
-  if (this.left) {
-    x -= 1;
-  }
-  if (this.right) {  
-    x += 1;
-  }
-  this.world.player.walkDir.set(x, y)
+  // Update movement
+  this.world.player.walkDir.copy(this.arrowDirection)
                            .normalize();
   
   // find the world coordinates
   // pickingray mutates vector so clone()
   var ray = this._projector.pickingRay(this.mousePos.clone(), this.camera);
-  this.world.player.target = Utils.intersectXYPlane(ray); 
-  
-}
+  this.world.player.target = Utils.intersectXYPlane(ray);   
+};
