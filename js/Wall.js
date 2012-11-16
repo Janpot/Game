@@ -51,10 +51,25 @@ var Wall = function (cfg) {
     
     var shape = new THREE.Shape(geom.vertices);
     var mesh = new THREE.Mesh(shape.extrude({amount: 1000, bevelEnabled: false}), new THREE.MeshBasicMaterial({ color: 0x000000 }));
-    //mesh.doubleSided = true;
+    mesh.doubleSided = true;
     this.hidingBlocks.push(mesh);
+  }  
+};
+
+// Modes for setMode()
+Wall.prototype.visibleParts = 0;
+Wall.prototype.obscuredParts = 1;
+Wall.prototype.obscuringMask = 2;
+
+Wall.prototype.setMode = function (mode) {
+  switch (mode) {
+    case this.visibleParts:
+      break;
+    case this.obscuredParts:
+      break;
+    case this.obscuringMask:
+      break;
   }
-  
 };
   
 // set the position from where to calculate the hidden area
@@ -88,10 +103,10 @@ Wall.prototype.setHidden = function (position) {
     
     var block = this.hidingBlocks[i].geometry;
     var height = 1000;
-    block.vertices[0].set(ray1.origin.x, ray1.origin.y, -height);    
-    block.vertices[1].set(end1.x, end1.y, -height);
-    block.vertices[2].set(end2.x, end2.y, -height);
-    block.vertices[3].set(ray2.origin.x, ray2.origin.y, -height); 
+    block.vertices[0].set(ray1.origin.x, ray1.origin.y, 0);    
+    block.vertices[1].set(end1.x, end1.y, 0);
+    block.vertices[2].set(end2.x, end2.y, 0);
+    block.vertices[3].set(ray2.origin.x, ray2.origin.y, 0); 
     block.vertices[4].set(ray1.origin.x, ray1.origin.y, height);    
     block.vertices[5].set(end1.x, end1.y, height);
     block.vertices[6].set(end2.x, end2.y, height);
