@@ -54,6 +54,10 @@ var World = function () {
   ]);
   this.floor = new THREE.Mesh(shape.extrude({amount: 0, bevelEnabled: false}), new THREE.MeshPhongMaterial({color: 0xA3E3D3}));
   
+  // light for rendering the hidden parts
+  this.hidingLight = new THREE.PointLight(0xFFFFFF, 0.1);
+  // light for render above the player
+  this.playerLight = new THREE.PointLight(0xFFFFFF);  
 };
 
 
@@ -67,11 +71,13 @@ World.prototype.init = function (scene) {
   for (var i = 0; i < world.walls.length; i++) {
     scene.add(this.walls[i].mesh);
     
-    // debug
-    var rays = this.walls[i].hidingRays;
-    for (var j = 0; j < rays.length; j++) {
-      scene.add(rays[j]);
+    var hidingBlocks = this.walls[i].hidingBlocks;
+    for (var j = 0; j < hidingBlocks.length; j++) {
+      scene.add(hidingBlocks[j]);
     }
+    
+    scene.add(this.hidingLight);
+    scene.add(this.playerLight);
   }
   
   scene.add(this.player.mesh);
@@ -81,33 +87,54 @@ World.prototype.init = function (scene) {
   }
 };
 
-World.prototype.initHidingMask = function (scene) {
-  var hiddenMat = new THREE.MeshBasicMaterial({color: 0x000000});
-  var visibleMat = new THREE.MeshBasicMaterial({color: 0xffffff});
-  
-  var floor = this.floor.clone();
-  floor.material = visibleMat;
-  scene.add(floor);
-  
-  for (var i = 0; i < world.walls.length; i++) {
-    var hidingBlocks = this.walls[i].hidingBlocks;
-    for (var j = 0; j < hidingBlocks.length; j++) {
-      hidingBlocks[j].material = hiddenMat;
-      scene.add(hidingBlocks[j]);
-    }
-  }
-  
-  var player = this.player.mesh.clone();
-  player.material = visibleMat;
-  scene.add(player);
-  
-  for (var i = 0; i < world.enemies.length; i++) {
-    var enemy = this.enemies[i].mesh.clone();
-    enemy.material = visibleMat;
-    scene.add(enemy);
+// Modes for setMode()
+World.visibleParts = 0;
+World.obscuredParts = 1;
+World.obscuringMask = 2;
+
+World.prototype.setMode = function (mode) {  
+  switch (mode) {
+    case World.visibleParts:
+      this.floor.visible = true;      
+      this.setWallsVisible(true, false);
+      this.setEnemiesVisible(true);
+      this.player.mesh.visible = true;
+      break;
+    case World.obscuredParts:
+      this.floor.visible = true;
+      this.setWallsVisible(true, false);
+      this.setEnemiesVisible(false);
+      this.player.mesh.visible = true;
+      this.hidingLight.visible = true;
+      this.playerLight.visible = false;
+      break;
+    case World.obscuringMask:
+      this.floor.visible = false;
+      this.setWallsVisible(false, true);
+      this.setEnemiesVisible(false);
+      this.player.mesh.visible = false;
+      this.hidingLight.visible = false;
+      this.playerLight.visible = true;
+      break;
   }
 };
 
+// sets the visibility of the parts of the wall
+World.prototype.setWallsVisible = function (wallVisible, hidingblockVisible) {
+  for (var i = 0; i < this.walls.length; i++) {
+    this.walls[i].setVisible(wallVisible, hidingblockVisible);
+  }
+};
+
+// set the visibility of the enemies
+World.prototype.setEnemiesVisible = function (visible) {
+  for (var i = 0; i < this.enemies.length; i++) {
+    var enemy = this.enemies[i];
+    enemy.mesh.visible = visible;
+  }
+};
+
+// determines whether a point in 2D space is obscured by a wall in the world
 World.prototype.isVisible = function (position) {
   for (var i = 0; i < this.walls.length; i++) {
     if (this.walls[i].hides(position)) {
@@ -120,16 +147,14 @@ World.prototype.isVisible = function (position) {
 // update the world with a timeframe of delta
 World.prototype.update = function (delta) {
   this.player.update(delta);
+  this.hidingLight.position.set(this.player.position.x, this.player.position.y, 100);
+  this.playerLight.position.set(this.player.position.x, this.player.position.y, 10);
   this.updateHidden()
 };
 
+// update the hidden parts of the world
 World.prototype.updateHidden = function () {
   for (var i = 0; i < this.walls.length; i++) {
     this.walls[i].setHidden(this.player.position);
-  }
-  
-  for (var i = 0; i < world.enemies.length; i++) {
-    var enemy = this.enemies[i];
-    enemy.mesh.visible = this.isVisible(enemy.position);
   }
 };

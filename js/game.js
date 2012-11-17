@@ -3,10 +3,10 @@ var world = new World();
 
 var canvas = document.querySelector('#viewport');
 var renderer = new THREE.WebGLRenderer({canvas: canvas});
+renderer.autoClear = false;
 var scene = new THREE.Scene();
 var maskScene = new THREE.Scene();
 world.init(scene);
-world.initHidingMask(maskScene);
 
 
 
@@ -37,20 +37,9 @@ var initViewport = (function() {
   };
 })();
 
-var pointLight = new THREE.PointLight(0xFFFFFF);
-var hidden;
 var stats;
 
 var init = function() {
-  // set its position
-  pointLight.position.x = 0;
-  pointLight.position.y = 0;
-  pointLight.position.z = 10;
-  // add to the scene
-  scene.add(pointLight);
-
-  hidden = [];
-
   // Stats library to get framerate
   container = document.createElement( 'div' );
   document.body.appendChild( container );
@@ -63,20 +52,6 @@ var init = function() {
 initViewport();
 init();
 
-/*
-var renderPass = new THREE.RenderPass(scene, camera);
-//var maskPass = new THREE.MaskPass(maskScene, camera);
-renderPass.renderToScreen = true;
-
-var composer = new THREE.EffectComposer(renderer);
-composer.addPass(renderPass);
-//composer.addPass(maskPass);
-//renderer.render(scene, camera);
-renderer.clear();
-composer.render();*/
-
-
-
 // get the time difference between two consecutive calls of this function
 var getDelta = (function () {
   var lastCall = Date.now();
@@ -88,17 +63,7 @@ var getDelta = (function () {
   };
 }) ();
 
-animate();
-
-function animate() {
-  var delta = getDelta();
-  requestAnimationFrame(animate);
-  render();
-  update(delta);
-  stats.update();
-}
-
-function update(delta) {
+var update = function (delta) {
   initViewport();
 
   controls.update(delta);
@@ -107,37 +72,48 @@ function update(delta) {
   var pos = world.player.position;
   camera.position.x = pos.x;
   camera.position.y = pos.y;
+};
+
+var render = function () {
+  var ctx = renderer.context;
+  renderer.clear();
   
-  pointLight.position.x = pos.x;
-  pointLight.position.y = pos.y;
-}
-
-function render() {
+  // prepare stencilbuffer for writing mask
+  ctx.enable( ctx.STENCIL_TEST );
+  ctx.stencilFunc( ctx.ALWAYS, 0x1, 0x1 );
+  ctx.stencilOp( ctx.REPLACE, ctx.REPLACE, ctx.REPLACE );
+  
+  // render the mask
+  world.setMode(World.obscuringMask);
   renderer.render(scene, camera);
-  //renderer.clear();
-  //composer.render();
-}
+  
+  // clear the depth buffer after masking
+  ctx.clearDepth(0xffffff);
+  ctx.clear(ctx.DEPTH_BUFFER_BIT);
+  
+  // prepare stencilbuffer for using mask
+  ctx.stencilFunc( ctx.EQUAL, 0x0, 0x1 );
+  ctx.stencilOp( ctx.KEEP, ctx.KEEP, ctx.KEEP );
+  
+  // render the visible parts
+  world.setMode(World.visibleParts);
+  renderer.render(scene, camera);
+  
+  // invert mask
+  ctx.stencilFunc( ctx.EQUAL, 0x1, 0x1 );
+  
+  // render the obscured parts
+  world.setMode(World.obscuredParts);
+  renderer.render(scene, camera);
+};
 
+var animate = function () {
+  var delta = getDelta();
+  requestAnimationFrame(animate);
+  render();
+  update(delta);
+  stats.update();
+};
 
-var getVisibleFloor = (function () {
-  var p = new THREE.Projector();
-  camera.updateMatrixWorld();
-  var topLeft = new THREE.Vector3(-1, 1, -1);
-  var topRight = new THREE.Vector3(1, 1, -1);
-  var bottomLeft = new THREE.Vector3(-1, -1, -1);
-  var bottomRight = new THREE.Vector3(1, -1, -1);
-  return function () {
-    var topLeftRay = p.pickingRay(topLeft, camera);
-    var topRightRay = p.pickingRay(topRight, camera);
-    var bottomLeftRay = p.pickingRay(bottomLeft, camera);
-    var bottomRightRay = p.pickingRay(bottomRight, camera);
-    return {
-      topLeft: Utils.intersectXYPlane(topLeftRay),
-      topRight: Utils.intersectXYPlane(topRightRay),
-      bottomLeft: Utils.intersectXYPlane(bottomLeftRay),
-      bottomRight: Utils.intersectXYPlane(bottomRightRay)
-    };
-  };
-}) ();
+animate();
 
-// console.log(getVisibleFloor());
