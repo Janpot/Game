@@ -78,10 +78,10 @@ var render = function () {
   var ctx = renderer.context;
   renderer.clear();
   
-  // prepare stencilbuffer for writing mask
-  ctx.enable( ctx.STENCIL_TEST );
-  ctx.stencilFunc( ctx.ALWAYS, 0x1, 0x1 );
-  ctx.stencilOp( ctx.REPLACE, ctx.REPLACE, ctx.REPLACE );
+  // prepare stencilbuffer for writing a mask
+  ctx.enable(ctx.STENCIL_TEST);
+  ctx.stencilFunc(ctx.ALWAYS, 0x1, 0x1);
+  ctx.stencilOp(ctx.REPLACE, ctx.REPLACE, ctx.REPLACE);
   
   // render the mask
   world.setMode(World.obscuringMask);
@@ -92,15 +92,15 @@ var render = function () {
   ctx.clear(ctx.DEPTH_BUFFER_BIT);
   
   // prepare stencilbuffer for using mask
-  ctx.stencilFunc( ctx.EQUAL, 0x0, 0x1 );
-  ctx.stencilOp( ctx.KEEP, ctx.KEEP, ctx.KEEP );
+  ctx.stencilFunc(ctx.EQUAL, 0x0, 0x1 );
+  ctx.stencilOp(ctx.KEEP, ctx.KEEP, ctx.KEEP);
   
   // render the visible parts
   world.setMode(World.visibleParts);
   renderer.render(scene, camera);
   
   // invert mask
-  ctx.stencilFunc( ctx.EQUAL, 0x1, 0x1 );
+  ctx.stencilFunc(ctx.EQUAL, 0x1, 0x1);
   
   // render the obscured parts
   world.setMode(World.obscuredParts);
