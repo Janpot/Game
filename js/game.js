@@ -110,8 +110,8 @@ var render = function () {
 var animate = function () {
   var delta = getDelta();
   requestAnimationFrame(animate);
-  render();
   update(delta);
+  render();
   stats.update();
 };
 
