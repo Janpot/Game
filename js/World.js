@@ -31,7 +31,7 @@ var World = function () {
   });        
   
   for (var i = 0; i < this.walls.length; i++) {
-    this.player.pushCollidable(this.walls[i].mesh);
+    this.player.pushCollidable(this.walls[i]);
   }
   
   this.enemies = [];

@@ -12,7 +12,7 @@ var Controls = function (world, camera) {
   this.leftPressed = false;
   this.rightPressed = false;
   this.arrowDirection = new THREE.Vector2(0, 0);
-  this.mousePos = new THREE.Vector2(0, 0);
+  this.mousePos = new THREE.Vector2(1, 0);
   this.leftMouseBtn = false;
   this.rightMouseBtn = false;
   
