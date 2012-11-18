@@ -1,12 +1,28 @@
 // Describes a wall in the world, a wall is basically a 2D polygon in the XYplane
 var Wall = function (cfg) {
   
-  this.corners = cfg.corners;
+  // corners of the wall in 2D space
+  this.corners = cfg.corners; 
+  
+  // bounding box of the wall in 2D space
+  this.bounds = new THREE.Rectangle();
+  
+  // the 3D model of the wall
+  this.mesh;
+  
+  // the collection of hidden areas as rays in 2D space
+  this.hidden = [];
+  
+  // the 3D geometry for the hidden areas
+  this.hidingBlocks = [];
+  
+  
   
   // create mesh
   var height = 3;  
   var lowerVertices = [];
   for (var i = 0; i < this.corners.length; i++) {
+    this.bounds.addPoint(this.corners[i].x, this.corners[i].y);
     lowerVertices.push(new THREE.Vector3(this.corners[i].x, this.corners[i].y, 0));
   }
   var shape = new THREE.Shape();
@@ -16,7 +32,6 @@ var Wall = function (cfg) {
   
   // each hidden area consists of 2 2D rays in the XY plane
   // initialize the objects up front for performance
-  this.hidden = [];
   for (var i = 0; i < this.corners.length; i++) {
     var corner1 = this.corners[i];
     var corner2 = this.corners[(i + 1) % this.corners.length];
@@ -34,7 +49,7 @@ var Wall = function (cfg) {
     });
   }
   
-  this.hidingBlocks = [];
+  // create hidden geometry
   for (var i = 0; i < this.corners.length; i++) {    
     var shape = new THREE.Shape([
       new THREE.Vector3(1, 0, 0),
@@ -46,8 +61,14 @@ var Wall = function (cfg) {
     mesh.doubleSided = true;
     this.hidingBlocks.push(mesh);
   }  
-};
   
+  // calculate bounds
+  for (var i = 0; i < this.corners.length; i++) {
+    this.bounds.addPoint(this.corners[i].x, this.corners[i].y);
+  }
+  
+};
+
 // set the position from where to calculate the hidden area
 Wall.prototype.setHidden = function (position) {
   for (var i = 0; i < this.hidden.length; i++) {
@@ -108,3 +129,5 @@ Wall.prototype.setVisible = function (wallVisible, hidingblockVisible) {
     this.hidingBlocks[i].visible = hidingblockVisible;
   }
 };
+
+  

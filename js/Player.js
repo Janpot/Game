@@ -23,6 +23,10 @@ var Player = function (cfg) {
   // radius for a bounding circle for collision detection
   this.boundingRadius = 1;
   
+  // bounding box for the player
+  this.bounds = new THREE.Rectangle();
+  
+  
   if (cfg.color === undefined) {
     cfg.color = 0xCC0000;
   }
@@ -55,23 +59,45 @@ Player.prototype.update = function(delta) {
 // Update player position with a timeframe of delta
 Player.prototype.updatePosition = function (delta) {
   
-  var distance = this.walkDir.clone().multiplyScalar(this.speed * delta)
+  var distance = this.walkDir.clone().multiplyScalar(this.speed * delta);
 
   // TODO(Jan): do 2D collision detection with new position/direction system
   // check the line between this.position and nextPos for intersections with geometry
   // then set this.position to nextPos or the intersection point
   // take bounding circle into account
+  
+  var movementBounds = new THREE.Rectangle();
+  movementBounds.addPoint(this.position.x, this.position.y);
+  movementBounds.addPoint(this.position.x + distance.x, this.position.y + distance.y);
+  
+  var wallPieceBounds = new THREE.Rectangle();
+  
   var collision = false;
   if (distance.length() >= this.boundingRadius * 2) {
     // Do capsule collision detection
     
   } else {
-    for (var i = 0; i < this.collidableObjs.length; i++) {
-      var obj = this.collidableObjs[i].corners;
-      var objCount = obj.length;
+    for (var i = 0; i < this.collidableObjs.length; i++) {      
+      var wall = this.collidableObjs[i];
+      
+      if (!wall.bounds.intersects(movementBounds)) {
+        // early out
+        continue;
+      }
+      
+      var objCount = wall.corners.length;
       for (var j = 0; j < objCount; j++) {
-        var p1 = obj[j];
-        var p2 = obj[(j + 1) % objCount];
+        var p1 = wall.corners[j];
+        var p2 = wall.corners[(j + 1) % objCount];
+        
+        wallPieceBounds.empty();
+        wallPieceBounds.addPoint(p1.x, p1.y);
+        wallPieceBounds.addPoint(p2.x, p2.y);
+        
+        if (!wallPieceBounds.intersects(movementBounds)) {
+          // early out
+          continue;
+        }
         
         var u = new THREE.Vector2().sub(p2, p1);
         var v = distance;
@@ -97,4 +123,10 @@ Player.prototype.updatePosition = function (delta) {
 
 Player.prototype.pushCollidable = function(wall) {
   this.collidableObjs.push(wall);
+};
+
+Player.prototype.updateBounds = function () {
+  this.bounds.empty();
+  this.bounds.addPoint(this.position.x - this.boundingRadius, this.position.y - this.boundingRadius);  
+  this.bounds.addPoint(this.position.x + this.boundingRadius, this.position.y + this.boundingRadius);
 };
