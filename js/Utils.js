@@ -1,4 +1,6 @@
-var Utils = (function () {
+var game = game || {};
+
+game.Utils = (function () {
   
   var twoPi = 2 * Math.PI;
   
@@ -19,8 +21,8 @@ var Utils = (function () {
     isBetweenVectors: function (v1, v2, u) {
       // tests whether vector u lies in the area defined by the angle
       // between v1 and v2
-      var angleU = Utils.angleBetweenVector2(v1, u);
-      var angleVectors = Utils.angleBetweenVector2(v1, v2);
+      var angleU = game.Utils.angleBetweenVector2(v1, u);
+      var angleVectors = game.Utils.angleBetweenVector2(v1, v2);
       return angleVectors > 0 ? 0 < angleU && angleU < angleVectors : angleVectors < angleU && angleU < 0;
     },
     

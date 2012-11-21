@@ -1,5 +1,5 @@
 
-var world = new World();
+var world = new game.World();
 
 var canvas = document.querySelector('#viewport');
 var renderer = new THREE.WebGLRenderer({canvas: canvas});
@@ -15,7 +15,7 @@ var camera = new THREE.PerspectiveCamera(45, 1, 0.1, 1000);
 scene.add(camera);
 camera.position.z = 60;
 
-var controls = new Controls(world, camera);
+var controls = new game.Controls(world, camera);
 
 var initViewport = (function() {  
   // variables to store previous state
@@ -84,7 +84,7 @@ var render = function () {
   ctx.stencilOp(ctx.REPLACE, ctx.REPLACE, ctx.REPLACE);
   
   // render the mask
-  world.setMode(World.obscuringMask);
+  world.setMode(game.World.obscuringMask);
   renderer.render(scene, camera);
   
   // clear the depth buffer after masking
@@ -96,14 +96,14 @@ var render = function () {
   ctx.stencilOp(ctx.KEEP, ctx.KEEP, ctx.KEEP);
   
   // render the visible parts
-  world.setMode(World.visibleParts);
+  world.setMode(game.World.visibleParts);
   renderer.render(scene, camera);
   
   // invert mask
   ctx.stencilFunc(ctx.EQUAL, 0x1, 0x1);
   
   // render the obscured parts
-  world.setMode(World.obscuredParts);
+  world.setMode(game.World.obscuredParts);
   renderer.render(scene, camera);
 };
 
