@@ -117,8 +117,8 @@ game.Wall = (function () {
       var ray2 = this.hidden[i].ray2;    
       var pos1 = position.clone().subSelf(ray1.origin);
       var pos2 = position.clone().subSelf(ray2.origin);
-      var inside1 = game.Utils.isBetweenVectors(ray1.wallDir, ray1.hiddenDir, pos1);
-      var inside2 = game.Utils.isBetweenVectors(ray2.wallDir, ray2.hiddenDir, pos2);
+      var inside1 = game.utils.isBetweenVectors(ray1.wallDir, ray1.hiddenDir, pos1);
+      var inside2 = game.utils.isBetweenVectors(ray2.wallDir, ray2.hiddenDir, pos2);
       if (inside1 && inside2) {
         return true;
       }

@@ -2,7 +2,6 @@ var game = game || {};
 
 // controls for a player
 game.Controls = (function () {
-  'use strict';
   
   var Controls = function (world, camera) {
     
@@ -141,7 +140,7 @@ game.Controls = (function () {
     // find the world coordinates
     // pickingray mutates vector so clone()
     var ray = this._projector.pickingRay(this.mousePos.clone(), this.camera);
-    this.world.player.target = game.Utils.intersectXYPlane(ray);   
+    this.world.player.target = game.utils.intersectXYPlane(ray);   
   };
   
   return Controls;

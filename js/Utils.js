@@ -1,6 +1,6 @@
 var game = game || {};
 
-game.Utils = (function () {
+game.utils = (function () {
   
   var twoPi = 2 * Math.PI;
   

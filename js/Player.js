@@ -54,7 +54,9 @@ game.Player = (function() {
                 .subSelf(this.position)
                 .normalize();
     
-    var angle = game.Utils.angleBetweenVector2(new THREE.Vector2(1, 0), this.lookDir);  
+    var angle = game.utils.angleBetweenVector2(new THREE.Vector2(1, 0), this.lookDir);  
+    
+    this.mesh.position.set(this.position.x, this.position.y, 0.5);
     this.mesh.rotation.set(0, 0, angle);  
   };
   
@@ -63,64 +65,52 @@ game.Player = (function() {
     
     var distance = this.walkDir.clone().multiplyScalar(this.speed * delta);
   
-    // TODO(Jan): do 2D collision detection with new position/direction system
-    // check the line between this.position and nextPos for intersections with geometry
-    // then set this.position to nextPos or the intersection point
-    // take bounding circle into account
+    // TODO(Jan): take bounding circle into account
+    
+    // threshold for movement to avoid getting stuck in the wall (between [0, 1])
+    var threshold = 0.01;
+    
+    // fraction of distance to travel
+    var s = 1;
     
     var movementBounds = new THREE.Rectangle();
     movementBounds.addPoint(this.position.x, this.position.y);
     movementBounds.addPoint(this.position.x + distance.x, this.position.y + distance.y);
     
-    var wallPieceBounds = new THREE.Rectangle();
-    
-    var collision = false;
-    if (distance.length() >= this.boundingRadius * 2) {
-      // Do capsule collision detection
+    for (var i = 0; i < this.collidableObjs.length; i++) {      
+      var wall = this.collidableObjs[i];    
       
-    } else {
-      for (var i = 0; i < this.collidableObjs.length; i++) {      
-        var wall = this.collidableObjs[i];
+      if (!wall.bounds.intersects(movementBounds)) {
+        // early out
+        continue;
+      }
+      
+      var wallPieceBounds = new THREE.Rectangle();    
+           
+      var objCount = wall.corners.length;
+      for (var j = 0; j < objCount; j++) {
+        var p1 = wall.corners[j];
+        var p2 = wall.corners[(j + 1) % objCount];
         
-        if (!wall.bounds.intersects(movementBounds)) {
+        wallPieceBounds.empty();
+        wallPieceBounds.addPoint(p1.x, p1.y);
+        wallPieceBounds.addPoint(p2.x, p2.y);
+        
+        if (!wallPieceBounds.intersects(movementBounds)) {
           // early out
           continue;
         }
         
-        var objCount = wall.corners.length;
-        for (var j = 0; j < objCount; j++) {
-          var p1 = wall.corners[j];
-          var p2 = wall.corners[(j + 1) % objCount];
-          
-          wallPieceBounds.empty();
-          wallPieceBounds.addPoint(p1.x, p1.y);
-          wallPieceBounds.addPoint(p2.x, p2.y);
-          
-          if (!wallPieceBounds.intersects(movementBounds)) {
-            // early out
-            continue;
-          }
-          
-          var u = new THREE.Vector2().sub(p2, p1);
-          var v = distance;
-          var w = new THREE.Vector2().sub(p1, this.position);
-              
-          var s = (v.y * w.x - v.x * w.y) / (v.x * u.y - v.y * u.x);
-          var t = (u.x * w.y - u.y * w.x) / (u.x * v.y - u.y * v.x);
-          if (s >= 0 && s <= 1 && t >= 0 && t <= 1) {
-            collision = true;
-          }
+        var sWall = game.dynamics.collidePointLine(this.position, distance, p1, p2);
+        
+        if (sWall !== undefined) {
+          s = Math.min(sWall, s);
         }
       }
     }
     
-    if(!collision) {    
-      this.position.addSelf(distance);    
-    }
+    this.position.addSelf(distance.multiplyScalar(s - threshold));
     
-    this.mesh.position.set(this.position.x, this.position.y, 0.5);
-    
-    // END TODO
   };
   
   Player.prototype.pushCollidable = function(wall) {
