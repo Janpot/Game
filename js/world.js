@@ -21,6 +21,17 @@ game.World = (function () {
     this.walls.push(
       new game.Wall({
         corners: [
+          new THREE.Vector2(-10, 10),
+          new THREE.Vector2(-10, 30),
+          new THREE.Vector2(-20, 30),
+          new THREE.Vector2(-20, 10)
+        ]
+      })
+    );
+    
+    this.walls.push(
+      new game.Wall({
+        corners: [
           new THREE.Vector2(40, 15),
           new THREE.Vector2(60, 10),
           new THREE.Vector2(63, 27),
