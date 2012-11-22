@@ -62,24 +62,35 @@ game.Player = (function() {
   
   // Update player position with a timeframe of delta
   Player.prototype.updatePosition = function (delta) {
-    
-    var distance = this.walkDir.clone().multiplyScalar(this.speed * delta);
+    distance = this.speed * delta;
+    var track = this.walkDir.clone().multiplyScalar(distance);
+    var altTrack = this.moveAndCollide(track);
+    this.moveAndCollide(altTrack);    
+  };
   
+  // try to move the player along track
+  // returns an alternative
+  Player.prototype.moveAndCollide = function (track) {
     // TODO(Jan): take bounding circle into account
     
     // threshold for movement to avoid getting stuck in the wall (between [0, 1])
     var threshold = 0.01;
     
+    var altTrack = new THREE.Vector2(0, 0);
+    
     // fraction of distance to travel
     var s = 1;
     
+    // calculate bounding box for the moving player
     var movementBounds = new THREE.Rectangle();
     movementBounds.addPoint(this.position.x, this.position.y);
-    movementBounds.addPoint(this.position.x + distance.x, this.position.y + distance.y);
+    movementBounds.addPoint(this.position.x + track.x, this.position.y + track.y);
+    movementBounds.inflate(this.boundingRadius);
     
     for (var i = 0; i < this.collidableObjs.length; i++) {      
       var wall = this.collidableObjs[i];    
       
+      // quickly test bounding boxes to avoid extra calculations
       if (!wall.bounds.intersects(movementBounds)) {
         // early out
         continue;
@@ -89,28 +100,56 @@ game.Player = (function() {
            
       var objCount = wall.corners.length;
       for (var j = 0; j < objCount; j++) {
+        // current wall: (p1, p2)
         var p1 = wall.corners[j];
         var p2 = wall.corners[(j + 1) % objCount];
         
+        // quickly test bounding boxes to avoid extra calculations
         wallPieceBounds.empty();
         wallPieceBounds.addPoint(p1.x, p1.y);
-        wallPieceBounds.addPoint(p2.x, p2.y);
-        
+        wallPieceBounds.addPoint(p2.x, p2.y);        
         if (!wallPieceBounds.intersects(movementBounds)) {
           // early out
           continue;
         }
         
-        var sWall = game.dynamics.collidePointLine(this.position, distance, p1, p2);
+        // calculate the collision
+        var sWall = game.dynamics.collidePointLine(this.position, track, p1, p2);        
         
         if (sWall !== undefined) {
-          s = Math.min(sWall, s);
+          // We have a collision
+          
+          // apply threshold
+          sWall = Math.min(sWall - threshold, 0);
+          
+          if (sWall < s) {
+            // Collision is closer on the track than previous collisions
+          
+            s = sWall;
+            
+            // calculate the alternative track
+            altTrack.sub(p2, p1);
+            var altSlope = Math.abs(altTrack.y / altTrack.x);
+            if (altSlope > 1) {
+              // vertical
+              altTrack.multiplyScalar(track.y * altTrack.y);
+            } else if (altSlope < 1) {
+              // horizontal
+              altTrack.multiplyScalar(track.x * altTrack.x);
+            } else if (altSlope === 1) {
+              // 45 degrees
+              altTrack.multiplyScalar(altTrack.dot(track));
+            }
+            altTrack.normalize().multiplyScalar(track.length() * (1 - s));
+          }
         }
       }
     }
     
-    this.position.addSelf(distance.multiplyScalar(s - threshold));
+    // move the player
+    this.position.addSelf(track.multiplyScalar(s));
     
+    return altTrack;
   };
   
   Player.prototype.pushCollidable = function(wall) {

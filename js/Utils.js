@@ -31,6 +31,10 @@ game.utils = (function () {
       var x = ray.origin.x + ray.direction.x * t;
       var y = ray.origin.y + ray.direction.y * t;
       return new THREE.Vector2(x, y);
+    },
+    
+    midPoint: function (P1, P2) {
+      return new THREE.Vector2().sub(P2, P1).multiplyScalar(0.5).addSelf(P1);
     }
   
   }

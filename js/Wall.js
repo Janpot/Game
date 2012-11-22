@@ -92,7 +92,8 @@ game.Wall = (function () {
       // update rays for debugging
       var length = 1000;
       var end1 = ray1.hiddenDir.clone().multiplyScalar(length).addSelf(ray1.origin);
-      var end2 = ray2.hiddenDir.clone().multiplyScalar(length).addSelf(ray2.origin);    
+      var end2 = ray2.hiddenDir.clone().multiplyScalar(length).addSelf(ray2.origin);  
+      
       
       var block = this.hidingBlocks[i].geometry;
       var height = 1000;
