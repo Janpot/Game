@@ -15,23 +15,16 @@ performance.now = (function() {
 })();
 
 
-var world = new game.World();
+
 
 var canvas = document.querySelector('#viewport');
 var renderer = new THREE.WebGLRenderer({canvas: canvas});
 renderer.autoClear = false;
-var scene = new THREE.Scene();
-var maskScene = new THREE.Scene();
-world.init(scene);
 
 
-
-// add a temporary aspect ratio of 1, will be reset by initViewport
-var camera = new THREE.PerspectiveCamera(45, 1, 0.1, 1000);
-scene.add(camera);
-camera.position.z = 60;
-
-var controls = new game.Controls(world, camera);
+var world = new game.World();
+world.load();
+var controls = new game.Controls(world);
 
 var initViewport = (function() {  
   // variables to store previous state
@@ -45,8 +38,8 @@ var initViewport = (function() {
       var aspect = viewport.width / viewport.height;
       renderer.setSize(width, height);
       controls.setSize(width, height);
-      camera.aspect = width / height;
-      camera.updateProjectionMatrix();
+      world.camera.aspect = width / height;
+      world.camera.updateProjectionMatrix();
       prevWidth = width;
       prevHeight = height;
     }    
@@ -65,7 +58,6 @@ var init = function() {
   container.appendChild( stats.domElement );
 }
 
-initViewport();
 init();
 
 // get the time difference between two consecutive calls of this function
@@ -84,50 +76,13 @@ var update = function (delta) {
 
   controls.update(delta);
   world.update(delta);
-  
-  var pos = world.player.position;
-  camera.position.x = pos.x;
-  camera.position.y = pos.y;
-};
-
-var render = function () {
-  var ctx = renderer.context;
-  renderer.clear();
-  
-  // prepare stencilbuffer for writing a mask
-  ctx.enable(ctx.STENCIL_TEST);
-  ctx.stencilFunc(ctx.ALWAYS, 0x1, 0x1);
-  ctx.stencilOp(ctx.REPLACE, ctx.REPLACE, ctx.REPLACE);
-  
-  // render the mask
-  world.setMode(game.World.obscuringMask);
-  renderer.render(scene, camera);
-  
-  // clear the depth buffer after masking
-  ctx.clearDepth(0xffffff);
-  ctx.clear(ctx.DEPTH_BUFFER_BIT);
-  
-  // prepare stencilbuffer for using mask
-  ctx.stencilFunc(ctx.EQUAL, 0x0, 0x1 );
-  ctx.stencilOp(ctx.KEEP, ctx.KEEP, ctx.KEEP);
-  
-  // render the visible parts
-  world.setMode(game.World.visibleParts);
-  renderer.render(scene, camera);
-  
-  // invert mask
-  ctx.stencilFunc(ctx.EQUAL, 0x1, 0x1);
-  
-  // render the obscured parts
-  world.setMode(game.World.obscuredParts);
-  renderer.render(scene, camera);
 };
 
 var animate = function () {
   var delta = getDelta();
   requestAnimationFrame(animate);
   update(delta);
-  render();
+  world.render(renderer);
   stats.update();
 };
 

@@ -3,7 +3,7 @@ var game = game || {};
 // controls for a player
 game.Controls = (function () {
   
-  var Controls = function (world, camera) {
+  var Controls = function (world) {
     
     this.width = 0;
     this.height = 0;
@@ -21,7 +21,6 @@ game.Controls = (function () {
     this.rightMouseBtn = false;
     
     this._projector = new THREE.Projector();
-    this.camera = camera;
     
     var keyDown = function (e) {
       var code = e.keyCode !== undefined ? e.keyCode : e.which;
@@ -139,7 +138,7 @@ game.Controls = (function () {
     
     // find the world coordinates
     // pickingray mutates vector so clone()
-    var ray = this._projector.pickingRay(this.mousePos.clone(), this.camera);
+    var ray = this._projector.pickingRay(this.mousePos.clone(), this.world.camera);
     this.world.player.target = game.utils.intersectXYPlane(ray);   
   };
   
