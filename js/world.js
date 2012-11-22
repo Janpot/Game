@@ -102,8 +102,8 @@ game.World = (function () {
   
   // update the camera to follow the player
   World.prototype.updateCamera = function () {
-    world.camera.position.x = world.player.position.x;
-    world.camera.position.y = world.player.position.y;
+    this.camera.position.x = this.player.position.x;
+    this.camera.position.y = this.player.position.y;
   };
   
   // update the hidden parts of the world
