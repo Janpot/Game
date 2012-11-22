@@ -1,3 +1,19 @@
+// TODO(Jan) decide where to put shims like these:
+// Shim for performance.now()
+// Date.now() may only have a resolution of 15ms on some browsers
+// 60 FPS = intervals of 16.6 ms, window.performance.webkitNow provides 
+// submillisecond precision
+window.performance = window.performance || {};
+performance.now = (function() {
+  var pageStart = new Date().getTime();
+  return performance.now       ||
+         performance.mozNow    ||
+         performance.msNow     ||
+         performance.oNow      ||
+         performance.webkitNow ||
+         function() { return new Date().getTime() - pageStart; };
+})();
+
 
 var world = new game.World();
 
@@ -54,9 +70,9 @@ init();
 
 // get the time difference between two consecutive calls of this function
 var getDelta = (function () {
-  var lastCall = Date.now();
+  var lastCall = window.performance.now();
   return function () {
-    var now = Date.now();
+    var now = window.performance.now();
     var delta = now - lastCall;
     lastCall = now;
     return delta / 1000; //s
