@@ -6,9 +6,9 @@ game.Player = (function() {
   var angleThreshold = Math.cos(3 * Math.PI / 8);
   
   var Player = function (cfg) {
-    // List of object where player can collide with
-    this.collidableObjs = [];
-    this.collidableObjs2 = [];
+    
+    // the world this player lives in
+    this.world;
     
     // Player speed
     this.speed = 10; // m/s
@@ -27,9 +27,6 @@ game.Player = (function() {
     
     // radius for a bounding circle for collision detection
     this.boundingRadius = 1;
-    
-    // bounding box for the player
-    this.bounds = new THREE.Rectangle();
     
     
     if (cfg.color === undefined) {
@@ -74,8 +71,7 @@ game.Player = (function() {
   // try to move the player along track
   // returns an alternative
   Player.prototype.moveAndCollide = function (track) {
-    // TODO(Jan): take bounding circle into account
-    // TODO(Jan): Inject world into player instead of collidableObjects    
+    // TODO(Jan): take bounding circle into account, maybe we should solve this by offsetting the walls?
     // TODO(Jan): Collide enemies
     
     // threshold for movement to avoid getting stuck in the wall (between [0, 1])
@@ -95,8 +91,8 @@ game.Player = (function() {
     movementBounds.addPoint(this.position.x + track.x, this.position.y + track.y);
     movementBounds.inflate(this.boundingRadius);
     
-    for (var i = 0; i < this.collidableObjs.length; i++) {      
-      var wall = this.collidableObjs[i];    
+    for (var i = 0; i < this.world.walls.length; i++) {      
+      var wall = this.world.walls[i];    
       
       // quickly test bounding boxes to avoid extra calculations
       if (!wall.bounds.intersects(movementBounds)) {
@@ -122,7 +118,7 @@ game.Player = (function() {
         }
         
         // calculate the collision
-        var sWall = game.dynamics.collidePointLine(this.position, track, p1, p2);        
+        var sWall = game.dynamics.collidePointLine(this.position, track, p1, p2);
         
         if (sWall !== undefined) {
           // We have a collision
@@ -135,8 +131,8 @@ game.Player = (function() {
           
             s = sWall;
             
-            altTrack.sub(p2, p1);
-            
+            // calculate alternative track
+            altTrack.sub(p2, p1);            
             var cosAlpha = altTrack.dot(track) / (altTrack.length() * distance);
             
             if (Math.abs(cosAlpha) > angleThreshold) {
@@ -154,16 +150,6 @@ game.Player = (function() {
     this.position.addSelf(track.multiplyScalar(s));
     
     return altTrack;
-  };
-  
-  Player.prototype.pushCollidable = function(wall) {
-    this.collidableObjs.push(wall);
-  };
-  
-  Player.prototype.updateBounds = function () {
-    this.bounds.empty();
-    this.bounds.addPoint(this.position.x - this.boundingRadius, this.position.y - this.boundingRadius);  
-    this.bounds.addPoint(this.position.x + this.boundingRadius, this.position.y + this.boundingRadius);
   };
   
   return Player;

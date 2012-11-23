@@ -27,8 +27,8 @@ game.World = (function () {
   // initialize the world
   World.prototype.init = function () {
     
-    this.scene = new THREE.Scene();
-      
+    // init scene
+    this.scene = new THREE.Scene();      
     this.scene.add(this.camera);
     
     // light for rendering the hidden parts
@@ -36,8 +36,10 @@ game.World = (function () {
     // light for render above the player
     this.playerLight = new THREE.PointLight(0xFFFFFF); 
     
+    // init floor
     this.scene.add(this.floor);
     
+    // init walls
     for (var i = 0; i < this.walls.length; i++) {
       this.scene.add(this.walls[i].mesh);
       
@@ -50,14 +52,14 @@ game.World = (function () {
       this.scene.add(this.playerLight);
     }
     
+    // init player
+    this.player.world = this;
     this.scene.add(this.player.mesh);
     
+    // init enemies
     for (var i = 0; i < this.enemies.length; i++) {
+      this.enemies[i].world = this;
       this.scene.add(this.enemies[i].mesh);
-    }
-    
-    for (var i = 0; i < this.walls.length; i++) {
-      this.player.pushCollidable(this.walls[i]);
     }
   };
   

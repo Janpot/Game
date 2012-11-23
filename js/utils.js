@@ -35,6 +35,10 @@ game.utils = (function () {
     
     midPoint: function (P1, P2) {
       return new THREE.Vector2().sub(P2, P1).multiplyScalar(0.5).addSelf(P1);
+    },
+    
+    perpendicular: function (v) {
+      return new THREE.Vector2(-v.y, v.x);
     }
   
   }
