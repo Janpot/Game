@@ -2,6 +2,9 @@ var game = game || {};
 
 // describes a player in the field
 game.Player = (function() {
+  
+  var angleThreshold = Math.cos(3 * Math.PI / 8);
+  
   var Player = function (cfg) {
     // List of object where player can collide with
     this.collidableObjs = [];
@@ -72,6 +75,8 @@ game.Player = (function() {
   // returns an alternative
   Player.prototype.moveAndCollide = function (track) {
     // TODO(Jan): take bounding circle into account
+    // TODO(Jan): Inject world into player instead of collidableObjects    
+    // TODO(Jan): Collide enemies
     
     // threshold for movement to avoid getting stuck in the wall (between [0, 1])
     var threshold = 0.01;
@@ -80,6 +85,9 @@ game.Player = (function() {
     
     // fraction of distance to travel
     var s = 1;
+    
+    // distance of the track
+    var distance = track.length();
     
     // calculate bounding box for the moving player
     var movementBounds = new THREE.Rectangle();
@@ -120,27 +128,23 @@ game.Player = (function() {
           // We have a collision
           
           // apply threshold
-          sWall = Math.min(sWall - threshold, 0);
+          sWall = Math.max(sWall - threshold, 0);
           
           if (sWall < s) {
             // Collision is closer on the track than previous collisions
           
             s = sWall;
             
-            // calculate the alternative track
             altTrack.sub(p2, p1);
-            var altSlope = Math.abs(altTrack.y / altTrack.x);
-            if (altSlope > 1) {
-              // vertical
-              altTrack.multiplyScalar(track.y * altTrack.y);
-            } else if (altSlope < 1) {
-              // horizontal
-              altTrack.multiplyScalar(track.x * altTrack.x);
-            } else if (altSlope === 1) {
-              // 45 degrees
-              altTrack.multiplyScalar(altTrack.dot(track));
+            
+            var cosAlpha = altTrack.dot(track) / (altTrack.length() * distance);
+            
+            if (Math.abs(cosAlpha) > angleThreshold) {
+              altTrack.multiplyScalar(cosAlpha).normalize().multiplyScalar(distance * (1 - s));
+            } else {
+              altTrack.set(0, 0);
             }
-            altTrack.normalize().multiplyScalar(track.length() * (1 - s));
+            
           }
         }
       }
