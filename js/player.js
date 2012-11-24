@@ -71,6 +71,7 @@ game.Player = (function() {
   // try to move the player along track
   // returns an alternative
   Player.prototype.moveAndCollide = function (track) {
+    // TODO)Jan): Fix glitch around sharp corners
     // TODO(Jan): Cleanup
     
     // threshold for movement to avoid getting stuck in the wall (between [0, 1])
@@ -122,7 +123,11 @@ game.Player = (function() {
         
         // calculate the collision
         //var sWall = game.dynamics.collidePointLine(this.position, track, p1, p2, tmpAltTrack);
-        var sWall = game.dynamics.collideCircleLine(this.position, this.boundingRadius, track, p1, p2, tmpAltTrack);
+        var wallVector = new THREE.Vector2().sub(p2, p1);
+        var sWall = game.dynamics.collideCirclePolySegment(
+          this.position, 
+          this.boundingRadius, 
+          track, p1, wallVector, tmpAltTrack);
         
         if (sWall !== undefined) {
           // We have a collision

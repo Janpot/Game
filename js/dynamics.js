@@ -12,15 +12,14 @@ game.dynamics = (function () {
   
   return {
     
-    // collide a point moving along a vector (track) with a line (L1, L2)
+    // collide a point moving along a vector (track) with a line (L, u)
     // returns a fraction of track between [0, 1] or undefined when no collision
     // sets altTrack to an alternative track if it is provided
-    collidePointLine: function (P, track, L1, L2, altTrack) {
+    collidePointLine: function (P, track, L, u, altTrack) {
       // As per http://www.softsurfer.com/Archive/algorithm_0104/algorithm_0104B.htm
       
-      var u = new THREE.Vector2().sub(L2, L1);
       var v = track;
-      var w = new THREE.Vector2().sub(L1, P);
+      var w = new THREE.Vector2().sub(L, P);
       
       var perpV = game.utils.perpendicular(v);
       var perpU = game.utils.perpendicular(u);
@@ -103,79 +102,26 @@ game.dynamics = (function () {
       return game.dynamics.collidePointCircle(C1, track, C2, r1 + r2, altTrack);
     },
     
-    collideCircleLine: function (C, r, track, L1, L2, altTrack) {
-      // TODO(Jan): Cleanup + optimize!
-      
-      var wallVector = new THREE.Vector2().sub(L2, L1)
-      var offsetVector = game.utils.perpendicular(wallVector).normalize().multiplyScalar(r);
-      
-      var tmpAltTrack = new THREE.Vector2(0, 0);
-      collision = false;
-      var s = 1;
-      
-      var tmpS = game.dynamics.collidePointLine(
-        C, 
-        track, 
-        new THREE.Vector2().add(L1, offsetVector), 
-        new THREE.Vector2().add(L2, offsetVector), 
-        tmpAltTrack
-      );
-      if (tmpS !== undefined) {
-        collision = true;
-        s = tmpS;
-        altTrack.copy(tmpAltTrack);
-      }
-      
-      var tmpS = game.dynamics.collidePointLine(
-        C, 
-        track, 
-        new THREE.Vector2().sub(L1, offsetVector), 
-        new THREE.Vector2().sub(L2, offsetVector), 
-        tmpAltTrack
-      );
-      if (tmpS !== undefined) {
-        collision = true;
-        if (tmpS < s) {
-          s = tmpS;
-          altTrack.copy(tmpAltTrack);
-        }
-      }
-      
-      var tmpS = game.dynamics.collidePointCircle(
-        C, 
-        track, 
-        L1,
-        r,
-        tmpAltTrack
-      );
-      if (tmpS !== undefined) {
-        collision = true;
-        if (tmpS < s) {
-          s = tmpS;
-          altTrack.copy(tmpAltTrack);
-        }
-      }
-      
-      var tmpS = game.dynamics.collidePointCircle(
-        C, 
-        track, 
-        L2,
-        r,
-        tmpAltTrack
-      );
-      if (tmpS !== undefined) {
-        collision = true;
-        if (tmpS < s) {
-          s = tmpS;
-          altTrack.copy(tmpAltTrack);
-        }
-      }
-      
-      if (collision) {
+    // collide a circle (C1, r1) moving along a vector (track) with a Segment of a polygon (L, u)
+    // this function is used in detecting collisions with a side of a polygon so only one 
+    // endpoint off the line is collided
+    // returns a fraction of track between [0, 1] or undefined when no collision
+    // sets altTrack to an alternative track if it is provided
+    collideCirclePolySegment: function (C, r, track, L, u, altTrack) {      
+      // Offset the line with the radius
+      var w = new THREE.Vector2().sub(C, L);
+      var sign = u.dot(w) > 0 ? -1 : 1;
+      var offsetVector = game.utils.perpendicular(u).normalize().multiplyScalar(sign * r);
+      var offsetL = new THREE.Vector2().add(L, offsetVector)
+            
+      // collide with the line      
+      var s = game.dynamics.collidePointLine(C, track, offsetL, u, altTrack);
+      if (s !== undefined) {
         return s;
       }
       
-      return undefined;
+      // collide with the endpoint
+      return game.dynamics.collidePointCircle(C, track, L, r, altTrack);
     }
     
   };
