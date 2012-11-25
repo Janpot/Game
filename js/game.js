@@ -24,7 +24,8 @@
   renderer.autoClear = false;
   
   
-  var world = new game.WorldLoader().load()
+  var world = new game.WorldLoader().load();
+  window.world = world;
   var controls = new game.Controls(world);
   
   var initViewport = (function() {  

@@ -7,11 +7,8 @@ game.Player = (function() {
   
   var Player = function (cfg) {
     
-    // the world this player lives in
-    this.world;
-    
     // Player speed
-    this.speed = 10; // m/s
+    this.speed = 12; // m/s
     
     // Current position
     this.position = cfg.position || new THREE.Vector2(0, 0);
@@ -20,13 +17,13 @@ game.Player = (function() {
     this.walkDir = new THREE.Vector2(0, 0);
     
     // Direction the player is looking at (normalized)
-    this.lookDir = new THREE.Vector2(0, 0);
+    this.lookDir = new THREE.Vector2(1, 0);
     
     // Point the player is looking at
     this.target = new THREE.Vector2(0, 0);
     
     // radius for a bounding circle for collision detection
-    this.boundingRadius = 1;
+    this.boundingRadius = 0.5;
     
     
     if (cfg.color === undefined) {
@@ -46,31 +43,27 @@ game.Player = (function() {
   };
   
   // Update player state with a timeframe of delta
-  Player.prototype.update = function(delta) {
-    this.updatePosition(delta);
-    this.mesh.position.set(this.position.x, this.position.y, 0.5); 
+  Player.prototype.update = function(delta, world) {
+    // update position
+    distance = this.speed * delta;
+    var track = this.walkDir.normalize().multiplyScalar(distance);
+    var altTrack = this.moveAndCollide(track, world);
+    this.moveAndCollide(altTrack, world); 
     
+    // update rotation
     this.lookDir.copy(this.target)
                 .subSelf(this.position)
-                .normalize();
-    
+                .normalize();    
     var angle = game.utils.angleBetweenVector2(new THREE.Vector2(1, 0), this.lookDir);  
     
+    // update mesh
     this.mesh.position.set(this.position.x, this.position.y, 0.5);
     this.mesh.rotation.set(0, 0, angle);  
   };
   
-  // Update player position with a timeframe of delta
-  Player.prototype.updatePosition = function (delta) {
-    distance = this.speed * delta;
-    var track = this.walkDir.clone().multiplyScalar(distance);
-    var altTrack = this.moveAndCollide(track);
-    this.moveAndCollide(altTrack);    
-  };
-  
   // try to move the player along track
   // returns an alternative
-  Player.prototype.moveAndCollide = function (track) {
+  Player.prototype.moveAndCollide = function (track, world) {
     // TODO)Jan): Fix glitch around sharp corners
     // TODO(Jan): Cleanup
     
@@ -96,8 +89,8 @@ game.Player = (function() {
     var objectBounds = new THREE.Rectangle();
     
     // collide with walls
-    for (var i = 0; i < this.world.walls.length; i++) {      
-      var wall = this.world.walls[i];    
+    for (var i = 0; i < world.walls.length; i++) {      
+      var wall = world.walls[i];    
       
       // quickly test bounding boxes to avoid extra calculations
       if (!wall.bounds.intersects(movementBounds)) {
@@ -145,8 +138,8 @@ game.Player = (function() {
     }
     
     // collide with enemies
-    for (var i = 0; i < this.world.enemies.length; i++) {
-      var enemy = this.world.enemies[i];
+    for (var i = 0; i < world.enemies.length; i++) {
+      var enemy = world.enemies[i];
       
       objectBounds.empty();
       objectBounds.addPoint(enemy.position.x - enemy.boundingRadius, enemy.position.y - enemy.boundingRadius);
@@ -177,6 +170,10 @@ game.Player = (function() {
     this.position.addSelf(track.multiplyScalar(s));
     
     return altTrack;
+  };
+  
+  Player.prototype.shoot = function (world) {
+    world.addBullet(this.position.clone(), this.lookDir.clone());
   };
   
   return Player;

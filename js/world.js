@@ -20,6 +20,8 @@ game.World = (function () {
     
     this.floor;
     
+    this.bullets = [];
+    
     this.init();
     
   };
@@ -32,9 +34,11 @@ game.World = (function () {
     this.scene.add(this.camera);
     
     // light for rendering the hidden parts
-    this.hidingLight = new THREE.PointLight(0xFFFFFF, 0.1);
+    this.hidingLight = new THREE.DirectionalLight(0xFFFFFF, 0.1);    
+    this.hidingLight.target = this.player.mesh;
     // light for render above the player
-    this.playerLight = new THREE.PointLight(0xFFFFFF); 
+    this.playerLight = new THREE.DirectionalLight(0xFFFFFF);
+    this.playerLight.target = this.player.mesh;
     
     // init floor
     this.scene.add(this.floor);
@@ -53,35 +57,14 @@ game.World = (function () {
     }
     
     // init player
-    this.player.world = this;
     this.scene.add(this.player.mesh);
     
     // init enemies
     for (var i = 0; i < this.enemies.length; i++) {
-      this.enemies[i].world = this;
       this.scene.add(this.enemies[i].mesh);
     }
   };
   
-  // Modes for setMode()
-  World.visibleParts = 0;
-  World.obscuredParts = 1;
-  World.obscuringMask = 2;
-  
-  // sets the visibility of the parts of the wall
-  World.prototype.setWallsVisible = function (wallVisible, hidingblockVisible) {
-    for (var i = 0; i < this.walls.length; i++) {
-      this.walls[i].setVisible(wallVisible, hidingblockVisible);
-    }
-  };
-  
-  // set the visibility of the enemies
-  World.prototype.setEnemiesVisible = function (visible) {
-    for (var i = 0; i < this.enemies.length; i++) {
-      var enemy = this.enemies[i];
-      enemy.mesh.visible = visible;
-    }
-  };
   
   // determines whether a point in 2D space is obscured by a wall in the world
   World.prototype.isVisible = function (position) {
@@ -95,7 +78,8 @@ game.World = (function () {
   
   // update the world with a timeframe of delta
   World.prototype.update = function (delta) {
-    this.player.update(delta);
+    this.player.update(delta, this);
+    this.updateBullets(delta);
     this.hidingLight.position.set(this.player.position.x, this.player.position.y, 100);
     this.playerLight.position.set(this.player.position.x, this.player.position.y, 10);
     this.updateHidden();
@@ -112,6 +96,12 @@ game.World = (function () {
   World.prototype.updateHidden = function () {
     for (var i = 0; i < this.walls.length; i++) {
       this.walls[i].setHidden(this.player.position);
+    }
+  };
+  
+  World.prototype.updateBullets = function (delta) {
+    for (var i = 0; i < this.bullets.length; i++) {
+      this.bullets[i].update(delta);
     }
   };
   
@@ -149,12 +139,52 @@ game.World = (function () {
     renderer.render(this.scene, this.camera);
   };
   
+  
+  World.prototype.addBullet = function (position, direction) {
+    var bullet = new game.Bullet(position, direction);
+    this.bullets.push(bullet);
+    this.scene.add(bullet.mesh);
+  };
+  
+  
+  
+  
+  
+  // Modes for setMode()
+  World.visibleParts = 0;
+  World.obscuredParts = 1;
+  World.obscuringMask = 2;
+  
+  // sets the visibility of the parts of the wall
+  World.prototype.setWallsVisible = function (wallVisible, hidingblockVisible) {
+    for (var i = 0; i < this.walls.length; i++) {
+      this.walls[i].setVisible(wallVisible, hidingblockVisible);
+    }
+  };
+  
+  // set the visibility of the enemies
+  World.prototype.setEnemiesVisible = function (visible) {
+    for (var i = 0; i < this.enemies.length; i++) {
+      var enemy = this.enemies[i];
+      enemy.mesh.visible = visible;
+    }
+  };
+  
+  // set the visibility of the bullets
+  World.prototype.setBulletsVisible = function (visible) {
+    for (var i = 0; i < this.bullets.length; i++) {
+      var bullet = this.bullets[i];
+      bullet.mesh.visible = visible;
+    }
+  };
+  
   World.prototype.setMode = function (mode) {  
     switch (mode) {
       case World.visibleParts:
         this.floor.visible = true;      
         this.setWallsVisible(true, false);
         this.setEnemiesVisible(true);
+        this.setBulletsVisible(true);
         this.player.mesh.visible = true;
         break;
       case World.obscuredParts:
@@ -162,6 +192,7 @@ game.World = (function () {
         this.setWallsVisible(true, false);
         this.setEnemiesVisible(false);
         this.player.mesh.visible = true;
+        this.setBulletsVisible(false);
         this.hidingLight.visible = true;
         this.playerLight.visible = false;
         break;
@@ -169,6 +200,7 @@ game.World = (function () {
         this.floor.visible = false;
         this.setWallsVisible(false, true);
         this.setEnemiesVisible(false);
+        this.setBulletsVisible(false);
         this.player.mesh.visible = false;
         this.hidingLight.visible = false;
         this.playerLight.visible = true;

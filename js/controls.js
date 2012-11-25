@@ -87,6 +87,7 @@ game.Controls = (function () {
       switch (e.button) {
         case 0: // left
           this.leftMouseBtn = true;
+          this.world.player.shoot(this.world);
           break;
         case 2: // right
           this.rightMouseBtn = true;
