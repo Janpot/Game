@@ -81,6 +81,7 @@
   };
   
   var animate = function () {
+    stats.begin();
     var delta = getDelta();
     requestAnimationFrame(animate);
     update(delta);
