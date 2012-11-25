@@ -39,6 +39,16 @@ game.utils = (function () {
     
     perpendicular: function (v) {
       return new THREE.Vector2(-v.y, v.x);
+    },
+    
+    angleSignBetween: function (v1, v2) {
+      // calculates sign of the angle between two vectors, -1, 0 or 1
+      var dot = v2.dot(game.utils.perpendicular(v1));
+      if (dot === 0) {
+        return 0;
+      } else {
+        return dot > 0 ? 1 : -1;
+      };
     }
   
   }
