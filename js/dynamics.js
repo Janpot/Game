@@ -110,16 +110,15 @@ game.dynamics = (function () {
     collideCirclePolySegment: function (C, r, track, L, u, altTrack) {      
       // Offset the line with the radius
       var w = new THREE.Vector2().sub(C, L);
-      var sign = u.dot(w) > 0 ? -1 : 1;
+      var sign = game.utils.angleBetweenVector2(u, w) < 0 ? 1 : -1;
       var offsetVector = game.utils.perpendicular(u).normalize().multiplyScalar(sign * r);
-      var offsetL = new THREE.Vector2().add(L, offsetVector)
-            
+      var offsetL = new THREE.Vector2().sub(L, offsetVector);
+      
       // collide with the line      
       var s = game.dynamics.collidePointLine(C, track, offsetL, u, altTrack);
       if (s !== undefined) {
         return s;
       }
-      
       // collide with the endpoint
       return game.dynamics.collidePointCircle(C, track, L, r, altTrack);
     }

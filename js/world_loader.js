@@ -10,6 +10,7 @@ game.WorldLoader = (function () {
     
     var world = new game.World();
     
+    // counterclockwise
     world.walls.push(
       new game.Wall({
         corners: [
@@ -22,17 +23,19 @@ game.WorldLoader = (function () {
       })
     );
     
+    //clockwise
     world.walls.push(
       new game.Wall({
         corners: [
-          new THREE.Vector2(-10, 10),
-          new THREE.Vector2(-10, 30),
+          new THREE.Vector2(-20, 10),
           new THREE.Vector2(-20, 30),
-          new THREE.Vector2(-20, 10)
+          new THREE.Vector2(-10, 30),
+          new THREE.Vector2(-10, 10)
         ]
       })
     );
     
+    // counterclockwise
     world.walls.push(
       new game.Wall({
         corners: [

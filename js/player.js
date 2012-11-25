@@ -64,7 +64,6 @@ game.Player = (function() {
   // try to move the player along track
   // returns an alternative
   Player.prototype.moveAndCollide = function (track, world) {
-    // TODO)Jan): Fix glitch around sharp corners
     // TODO(Jan): Cleanup
     
     // threshold for movement to avoid getting stuck in the wall (between [0, 1])
