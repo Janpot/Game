@@ -139,8 +139,11 @@ game.Controls = (function () {
     
     // find the world coordinates
     // pickingray mutates vector so clone()
-    var ray = this._projector.pickingRay(this.mousePos.clone(), this.world.camera);
-    this.world.player.target = game.utils.intersectXYPlane(ray);   
+    var ray = this._projector.pickingRay(this.mousePos.clone(), this.world.camera);    
+    var target = game.utils.intersectXYPlane(ray);
+    this.world.player.lookDir.copy(target)
+                             .subSelf(this.world.player.position)
+                             .normalize(); 
   };
   
   return Controls;

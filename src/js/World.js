@@ -34,6 +34,7 @@ game.World = (function () {
     enemy.id = id;
     this.enemies.push(enemy);
     this.scene.add(enemy.mesh);
+    return enemy;
   };
   
   World.prototype.removeEnemy = function(id) {

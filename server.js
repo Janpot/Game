@@ -11,45 +11,47 @@ console.log('Static file server running at http://localhost');
 
 var server = app.listen(port);
 var io = require('socket.io').listen(server);
-
-var players = [];
-
 io.set('log level', 0);
+
+// holds the currently connected players
+var players = [];
  
 io.sockets.on('connection', function(socket) {
+  // a client has connected
   
-  socket.emit('addplayer', players.map(function (player) {
-    return player.id;
-  }));
+  var player;  
   
-  players.push({
-    id: socket.id,
-    pos: {x: 0, y: 0},
-    dir: {x: 0, y: 0}
-  });
+  // initialize the client
+  socket.emit('init', players);
+  socket.join('game');
   
   socket.on('disconnect', function () {
+    // a client has left
     socket.leave('game');
-    socket.broadcast.to('game').emit('removeplayer', [socket.id]);
+    socket.broadcast.to('game').emit('removeplayer', player);
     players = players.filter(function (player) {
       return player.id !== socket.id;
     });
-  });
-  
-  socket.join('game');
-  socket.broadcast.to('game').emit('addplayer', [socket.id]);
+  });  
   
   socket.on('playerstate', function (data) {
-    for (var i = 0; i < players.length; i++) {
-      if (players[i].id === socket.id) {
-        players[i].pos = data.position;
-        players[i].dir = data.direction;
-      }
+    // the client updates its state
+    var firstUpdate = player === undefined;
+    player = player || {
+      id: socket.id
     }
-  });
+    player.pos = data.pos;
+    player.dir = data.dir;
+    player.look = data.look;
+    if (firstUpdate) {
+      players.push(player);
+      socket.broadcast.to('game').emit('addplayer', player);
+    }
+  });  
   
-  setInterval(function () {
-    socket.emit('gamestate', players);
-  }, 50);
 });
 
+// update the state of all connected clients
+setInterval(function () {
+  io.sockets.in('game').emit('gamestate', players);
+}, 50);

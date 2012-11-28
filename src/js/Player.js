@@ -22,9 +22,6 @@ game.Player = (function() {
     // Direction the player is looking at (normalized)
     this.lookDir = new THREE.Vector2(1, 0);
     
-    // Point the player is looking at
-    this.target = new THREE.Vector2(0, 0);
-    
     // radius for a bounding circle for collision detection
     this.boundingRadius = 0.5;
     
@@ -53,10 +50,6 @@ game.Player = (function() {
     var altTrack = this.moveAndCollide(track, world);
     this.moveAndCollide(altTrack, world); 
     
-    // update rotation
-    this.lookDir.copy(this.target)
-                .subSelf(this.position)
-                .normalize();    
     var angle = game.utils.angleBetweenVector2(new THREE.Vector2(1, 0), this.lookDir);  
     
     // update mesh
