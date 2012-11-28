@@ -167,3 +167,4 @@ pip-log.txt
 *.sublime-workspace
 
 test.html
+node_modules/*

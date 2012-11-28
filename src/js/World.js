@@ -25,6 +25,26 @@ game.World = (function () {
     this.init();
     
   };
+  
+  World.prototype.addEnemy = function(id) {
+    var enemy = new game.Player({ 
+      position: new THREE.Vector2(0, 0),
+      color: 0x0000FF
+    });
+    enemy.id = id;
+    this.enemies.push(enemy);
+    this.scene.add(enemy.mesh);
+  };
+  
+  World.prototype.removeEnemy = function(id) {
+    for (var i = 0; i < this.enemies.length; i++) {
+      var enemy = this.enemies[i];
+      if (enemy.id = id) {
+        this.enemies.splice(i, 1);
+        this.scene.remove(enemy.mesh);
+      }
+    }
+  };
 
   // initialize the world
   World.prototype.init = function () {
@@ -79,11 +99,19 @@ game.World = (function () {
   // update the world with a timeframe of delta
   World.prototype.update = function (delta) {
     this.player.update(delta, this);
+    this.updateEnemies(delta);
     this.updateBullets(delta);
     this.hidingLight.position.set(this.player.position.x, this.player.position.y, 100);
     this.playerLight.position.set(this.player.position.x, this.player.position.y, 10);
     this.updateHidden();
     this.updateCamera();
+  };
+  
+  // update the camera to follow the player
+  World.prototype.updateEnemies = function (delta) {
+    for (var i = 0; i < this.enemies.length; i++) {
+      this.enemies[i].update(delta, this);
+    }
   };
   
   // update the camera to follow the player

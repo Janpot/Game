@@ -7,6 +7,9 @@ game.Player = (function() {
   
   var Player = function (cfg) {
     
+    // generate a random id for now
+    this.id = Math.floor(Math.random() * 0xffff);
+    
     // Player speed
     this.speed = 12; // m/s
     

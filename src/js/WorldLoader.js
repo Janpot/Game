@@ -50,16 +50,7 @@ game.WorldLoader = (function () {
                     
     world.player = new game.Player({
       position: new THREE.Vector2(10, 7)
-    });        
-    
-    world.enemies.push(new game.Player({ 
-      position: new THREE.Vector2(0, 10),
-      color: 0x0000FF
-    }));
-    world.enemies.push(new game.Player({
-      position: new THREE.Vector2(35, 15),
-      color: 0x0000FF
-    }));
+    });
     
     
     var shape = new THREE.Shape();

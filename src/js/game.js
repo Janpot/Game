@@ -27,6 +27,7 @@
   var world = new game.WorldLoader().load();
   window.world = world;
   var controls = new game.Controls(world);
+  var network = new game.NetworkController(world);
   
   var initViewport = (function() {  
     // variables to store previous state
