@@ -80,7 +80,7 @@
   
   var update = function (delta) {
     initViewport();
-  
+    networkController.update(delta);
     playerController.update(delta);
     world.update(delta);
   };
