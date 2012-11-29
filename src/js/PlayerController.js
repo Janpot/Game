@@ -3,12 +3,14 @@ var game = game || {};
 // controls for a player
 game.PlayerController = (function () {
   
-  var PlayerController = function (world) {
+  var PlayerController = function (world, player) {
     
     this.width = 0;
     this.height = 0;
     
+    this.player = player;
     this.world = world;
+    world.addPlayer(player);
     
     // movement
     this.upPressed = false;
@@ -133,10 +135,8 @@ game.PlayerController = (function () {
   
   // update the world state according to the controls
   PlayerController.prototype.update = function (delta) {
-    var player = this.world.player;  
-    
     // update position
-    distance = player.speed * delta;
+    distance = this.player.speed * delta;
     var track = new THREE.Vector2().copy(this.arrowDirection)
                                    .normalize()
                                    .multiplyScalar(distance);
@@ -148,16 +148,16 @@ game.PlayerController = (function () {
     // pickingray mutates vector so clone()
     var ray = this._projector.pickingRay(this.mousePos.clone(), this.world.camera);    
     var target = game.utils.intersectXYPlane(ray);
-    player.lookDir.copy(target)
-                  .subSelf(this.world.player.position)
-                  .normalize(); 
+    this.player.lookDir.copy(target)
+                       .subSelf(this.player.position)
+                       .normalize(); 
+    
+    this.world.setViewPosition(this.player.position);
   };
   
   // try to move the player along track
   // returns an alternative track
   PlayerController.prototype.moveAndCollide = function (track) {
-    
-    var player = this.world.player;
     
     // threshold for movement to avoid getting stuck in the wall (between [0, 1])
     var threshold = 0.01;
@@ -173,9 +173,9 @@ game.PlayerController = (function () {
     
     // calculate bounding box for the moving player
     var movementBounds = new THREE.Rectangle();
-    movementBounds.addPoint(player.position.x, player.position.y);
-    movementBounds.addPoint(player.position.x + track.x, player.position.y + track.y);
-    movementBounds.inflate(player.boundingRadius);
+    movementBounds.addPoint(this.player.position.x, this.player.position.y);
+    movementBounds.addPoint(this.player.position.x + track.x, this.player.position.y + track.y);
+    movementBounds.inflate(this.player.boundingRadius);
     
     // bounding box for objects to collide with
     var objectBounds = new THREE.Rectangle();
@@ -209,8 +209,8 @@ game.PlayerController = (function () {
         // calculate the collision
         var wallVector = new THREE.Vector2().sub(p2, p1);
         var sWall = game.dynamics.collideCirclePolySegment(
-          player.position, 
-          player.boundingRadius, 
+          this.player.position, 
+          this.player.boundingRadius, 
           track, p1, wallVector, tmpAltTrack);
         
         if (sWall !== undefined) {
@@ -228,9 +228,14 @@ game.PlayerController = (function () {
       }
     }
     
-    // collide with enemies
-    for (var i = 0; i < this.world.enemies.length; i++) {
-      var enemy = this.world.enemies[i];
+    // collide with other players
+    for (var i = 0; i < this.world.players.length; i++) {
+      var enemy = this.world.players[i];
+      
+      if (enemy === this.player) {
+        // don't collide with self
+        continue;
+      }
       
       objectBounds.empty();
       objectBounds.addPoint(enemy.position.x - enemy.boundingRadius, enemy.position.y - enemy.boundingRadius);
@@ -242,7 +247,12 @@ game.PlayerController = (function () {
         continue;
       }
       
-      var sEnemy = game.dynamics.collideCircleCircle(player.position, player.boundingRadius, track, enemy.position, enemy.boundingRadius, tmpAltTrack);
+      var sEnemy = game.dynamics.collideCircleCircle(
+        this.player.position, this.player.boundingRadius, 
+        track, 
+        enemy.position, enemy.boundingRadius, 
+        tmpAltTrack);
+      
       if (sEnemy !== undefined) {
         // We have a collision
         
@@ -258,7 +268,7 @@ game.PlayerController = (function () {
     }
     
     // move the player
-    player.position.addSelf(track.multiplyScalar(s));
+    this.player.position.addSelf(track.multiplyScalar(s));
     
     return altTrack;
   };
@@ -266,8 +276,7 @@ game.PlayerController = (function () {
   
   // let the player shoot
   PlayerController.prototype.shoot = function () {
-    var player = world.player;
-    this.world.addBullet(player.position.clone(), player.lookDir.clone());
+    this.world.addBullet(this.player.position.clone(), this.player.lookDir.clone());
   }
   
   return PlayerController;

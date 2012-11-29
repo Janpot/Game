@@ -26,8 +26,12 @@
   
   var world = new game.WorldLoader().load();
   window.world = world;
-  var playerController = new game.PlayerController(world);
-  var networkController = new game.NetworkController(world);
+  
+  var player = new game.Player({
+    position: new THREE.Vector2(0, 0)
+  });
+  var playerController = new game.PlayerController(world, player);
+  var networkController = new game.NetworkController(world, player);
   
   var initViewport = (function() {  
     // variables to store previous state

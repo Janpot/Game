@@ -1,6 +1,14 @@
 var game = game || {};
 
-// Describes the world
+// game.World Describes the playingfield
+// This class is responsible for rendering the world and its objects
+// TODO(jan): Ultimately all game logic should be taken out of this class and
+// put in separate controllers. We will combine as much objects as possible in a 
+// global world.objects list and call update(delta) on each element. Each object 
+// wil extend a GameObject interface which exposes an update(delta) method.
+// We will combine: walls, players, floor, bullets,...
+//   depends on: - shader for the hidden parts so we don't need setMode(), etc
+//               - level creation mechanism (Cinema4D plugin)
 game.World = (function () {
   
   var World = function () {
@@ -11,12 +19,8 @@ game.World = (function () {
     this.camera.position.z = 60;
     
     this.walls = [];
-                    
-    this.player = new game.Player({
-      position: new THREE.Vector2(0, 0)
-    });
     
-    this.enemies = [];
+    this.players = [];
     
     this.floor;
     
@@ -26,24 +30,34 @@ game.World = (function () {
     
   };
   
-  World.prototype.addEnemy = function(id) {
-    var enemy = new game.Player({ 
-      position: new THREE.Vector2(0, 0),
-      color: 0x0000FF
-    });
-    enemy.id = id;
-    this.enemies.push(enemy);
-    this.scene.add(enemy.mesh);
-    return enemy;
+  // add a player to the world
+  World.prototype.addPlayer = function(player) {
+    this.players.push(player);
+    this.scene.add(player.mesh);
   };
   
-  World.prototype.removeEnemy = function(id) {
-    for (var i = 0; i < this.enemies.length; i++) {
-      var enemy = this.enemies[i];
-      if (enemy.id = id) {
-        this.enemies.splice(i, 1);
-        this.scene.remove(enemy.mesh);
+  // remove a player from the world
+  World.prototype.removePlayer = function(player) {
+    for (var i = 0; i < this.players.length; i++) {
+      if (this.players[i] = player) {
+        this.players.splice(i, 1);
+        this.scene.remove(player.mesh);
       }
+    }
+  };
+  
+  // update the players in this world
+  World.prototype.updatePlayers = function (delta) {
+    for (var i = 0; i < this.players.length; i++) {
+      this.players[i].update(delta);
+    }
+  };
+  
+  // set the visibility of the players
+  World.prototype.setPlayersVisible = function (visible) {
+    for (var i = 0; i < this.players.length; i++) {
+      var player = this.players[i];
+      player.mesh.visible = visible;
     }
   };
 
@@ -55,11 +69,10 @@ game.World = (function () {
     this.scene.add(this.camera);
     
     // light for rendering the hidden parts
-    this.hidingLight = new THREE.DirectionalLight(0xFFFFFF, 0.1);    
-    this.hidingLight.target = this.player.mesh;
+    this.hidingLight = new THREE.DirectionalLight(0xFFFFFF, 0.1);  
+    
     // light for render above the player
     this.playerLight = new THREE.DirectionalLight(0xFFFFFF);
-    this.playerLight.target = this.player.mesh;
     
     // init floor
     this.scene.add(this.floor);
@@ -76,14 +89,18 @@ game.World = (function () {
       this.scene.add(this.hidingLight);
       this.scene.add(this.playerLight);
     }
-    
-    // init player
-    this.scene.add(this.player.mesh);
-    
-    // init enemies
-    for (var i = 0; i < this.enemies.length; i++) {
-      this.scene.add(this.enemies[i].mesh);
+  };
+  
+  World.prototype.setViewPosition = function (position) {
+    for (var i = 0; i < this.walls.length; i++) {
+      this.walls[i].setHidden(position);
     }
+    this.hidingLight.position.set(position.x, position.y, 100);
+    this.playerLight.position.set(position.x, position.y, 10);
+    this.hidingLight.target.position.set(position.x, position.y, 0);    
+    this.playerLight.target.position.set(position.x, position.y, 0);
+    this.camera.position.x = position.x;
+    this.camera.position.y = position.y;
   };
   
   
@@ -99,33 +116,8 @@ game.World = (function () {
   
   // update the world with a timeframe of delta
   World.prototype.update = function (delta) {
-    this.player.update(delta);
-    this.updateEnemies(delta);
+    this.updatePlayers(delta);
     this.updateBullets(delta);
-    this.hidingLight.position.set(this.player.position.x, this.player.position.y, 100);
-    this.playerLight.position.set(this.player.position.x, this.player.position.y, 10);
-    this.updateHidden();
-    this.updateCamera();
-  };
-  
-  // update the camera to follow the player
-  World.prototype.updateEnemies = function (delta) {
-    for (var i = 0; i < this.enemies.length; i++) {
-      this.enemies[i].update(delta);
-    }
-  };
-  
-  // update the camera to follow the player
-  World.prototype.updateCamera = function () {
-    this.camera.position.x = this.player.position.x;
-    this.camera.position.y = this.player.position.y;
-  };
-  
-  // update the hidden parts of the world
-  World.prototype.updateHidden = function () {
-    for (var i = 0; i < this.walls.length; i++) {
-      this.walls[i].setHidden(this.player.position);
-    }
   };
   
   World.prototype.updateBullets = function (delta) {
@@ -175,10 +167,6 @@ game.World = (function () {
     this.scene.add(bullet.mesh);
   };
   
-  
-  
-  
-  
   // Modes for setMode()
   World.visibleParts = 0;
   World.obscuredParts = 1;
@@ -188,14 +176,6 @@ game.World = (function () {
   World.prototype.setWallsVisible = function (wallVisible, hidingblockVisible) {
     for (var i = 0; i < this.walls.length; i++) {
       this.walls[i].setVisible(wallVisible, hidingblockVisible);
-    }
-  };
-  
-  // set the visibility of the enemies
-  World.prototype.setEnemiesVisible = function (visible) {
-    for (var i = 0; i < this.enemies.length; i++) {
-      var enemy = this.enemies[i];
-      enemy.mesh.visible = visible;
     }
   };
   
@@ -212,15 +192,13 @@ game.World = (function () {
       case World.visibleParts:
         this.floor.visible = true;      
         this.setWallsVisible(true, false);
-        this.setEnemiesVisible(true);
+        this.setPlayersVisible(true);
         this.setBulletsVisible(true);
-        this.player.mesh.visible = true;
         break;
       case World.obscuredParts:
         this.floor.visible = true;
         this.setWallsVisible(true, false);
-        this.setEnemiesVisible(false);
-        this.player.mesh.visible = true;
+        this.setPlayersVisible(false);
         this.setBulletsVisible(false);
         this.hidingLight.visible = true;
         this.playerLight.visible = false;
@@ -228,9 +206,8 @@ game.World = (function () {
       case World.obscuringMask:
         this.floor.visible = false;
         this.setWallsVisible(false, true);
-        this.setEnemiesVisible(false);
+        this.setPlayersVisible(false);
         this.setBulletsVisible(false);
-        this.player.mesh.visible = false;
         this.hidingLight.visible = false;
         this.playerLight.visible = true;
         break;

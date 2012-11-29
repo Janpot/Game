@@ -47,11 +47,6 @@ game.WorldLoader = (function () {
         ]
       })
     );
-                    
-    world.player = new game.Player({
-      position: new THREE.Vector2(10, 7)
-    });
-    
     
     var shape = new THREE.Shape();
     shape.fromPoints([

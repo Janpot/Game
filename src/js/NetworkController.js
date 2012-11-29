@@ -3,8 +3,11 @@ var game = game || {};
 // controls the multiplayer aspect of the game
 game.NetworkController = (function () {
   
-  var NetworkController = function (world) {
+  var NetworkController = function (world, player) {
     this.world = world;
+    this.player = player;
+    
+    var enemies = {};
     
     // connect to the server
     var socket = io.connect(location.origin);
@@ -15,26 +18,32 @@ game.NetworkController = (function () {
         setInterval(function() {
           socket.emit('playerstate', {
             pos: {
-              x: this.world.player.position.x,
-              y: this.world.player.position.y
+              x: player.position.x,
+              y: player.position.y
             },
             look: {
-              x: this.world.player.lookDir.x,
-              y: this.world.player.lookDir.y
+              x: player.lookDir.x,
+              y: player.lookDir.y
             }
           });
         }, 50);
       };
       
       var addPlayer = function (player) {
-        var enemy = world.addEnemy(player.id);
+        var enemy = new game.Player({
+          color: 0x0000FF
+        });        
         enemy.position.copy(player.pos);
         enemy.lookDir.copy(player.look);
+        enemy.id = player.id;
+        
+        enemies[player.id] = enemy;
+        world.addPlayer(enemy);
       };
       
       // called by the server to initialize this client
       socket.on('init', function(game) {
-        for (var playerid in game.players) {
+        for (var playerid in game.players) {          
           addPlayer(game.players[playerid]);
         }
         startUpdate();
@@ -46,16 +55,17 @@ game.NetworkController = (function () {
       // remove a player when theserver signals a player has left
       socket.on('removeplayer', function(player) {
         world.removeEnemy(player.id);
+        delete enemies[player.id];
       });
       
       // update the enemies when the server sends an update
       // TODO(Jan): create mechanism to buffer the playerstate and play back on a certain
       //            offset time from the server to smooth out movement.
       //            check: http://buildnewgames.com/real-time-multiplayer/
-      socket.on('gamestate', function(game) {        
-        for (var i = 0; i < world.enemies.length; i++) {
-          var enemy = world.enemies[i];
-          var remote = game.players[enemy.id];
+      socket.on('gamestate', function(game) {   
+        for (var enemyid in enemies) {
+          var enemy = enemies[enemyid];
+          var remote = game.players[enemyid];
           enemy.position.copy(remote.pos);
           enemy.lookDir.copy(remote.look);
         }
