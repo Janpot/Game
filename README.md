@@ -10,7 +10,9 @@ Stay tuned...
 
 This game wouldn't be possible without these well known libraries:
 
-- [three.js](http://github.com/mrdoob/three.js)
+- [three.js](http://threejs.org/)
+- [Express](http://expressjs.com/)
+- [socket.io](http://socket.io/)
 
 ## License
 
