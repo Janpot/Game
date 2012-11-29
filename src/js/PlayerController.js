@@ -112,19 +112,13 @@ game.PlayerController = (function () {
     var onContextMenu = function (e) {
       e.preventDefault();
     };
-    
-    var bind = function (scope, fn) {
-      return function () {
-        fn.apply(scope, arguments)
-      };
-    };
         
-    window.addEventListener('keyup', bind(this, keyUp), false);
-    window.addEventListener('keydown', bind(this, keyDown), false);  
-    window.addEventListener('mousemove', bind(this, mouseMove), false);
-    window.addEventListener('mousedown', bind(this, mouseDown), false);
-    window.addEventListener('mouseup', bind(this, mouseUp), false);
-    window.addEventListener('contextmenu', bind(this, onContextMenu), false);
+    window.addEventListener('keyup', game.utils.bind(this, keyUp), false);
+    window.addEventListener('keydown', game.utils.bind(this, keyDown), false);  
+    window.addEventListener('mousemove', game.utils.bind(this, mouseMove), false);
+    window.addEventListener('mousedown', game.utils.bind(this, mouseDown), false);
+    window.addEventListener('mouseup', game.utils.bind(this, mouseUp), false);
+    window.addEventListener('contextmenu', game.utils.bind(this, onContextMenu), false);
   };
   
   // Set the proper size of this object to calculate the mouseposition

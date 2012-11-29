@@ -5,6 +5,13 @@ game.utils = (function () {
   var twoPi = 2 * Math.PI;
   
   return {
+    
+    // Binds a scope to a function
+    bind: function (scope, fn) {
+      return function () {
+        fn.apply(scope, arguments)
+      };
+    },
   
     angleBetweenVector2: function (v1, v2) {
       // calculates the angle between two vectors, ranges from -pi to pi
