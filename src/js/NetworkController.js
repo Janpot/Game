@@ -38,9 +38,9 @@ game.NetworkController = (function () {
       };
       
       // called by the server to initialize this client
-      socket.on('init', function(players) {
-        for (var i = 0; i < players.length; i++) {
-          addPlayer(players[i]);
+      socket.on('init', function(game) {
+        for (var playerid in game.players) {
+          addPlayer(game.players[playerid]);
         }
         startUpdate();
       });
@@ -57,16 +57,13 @@ game.NetworkController = (function () {
       // TODO(Jan): create mechanism to buffer the playerstate and play back on a certain
       //            offset time from the server to smooth out movement.
       //            check: http://buildnewgames.com/real-time-multiplayer/
-      socket.on('gamestate', function(players) {        
+      socket.on('gamestate', function(game) {        
         for (var i = 0; i < world.enemies.length; i++) {
           var enemy = world.enemies[i];
-          for (var j = 0; j < players.length; j++) {
-            if (enemy.id === players[j].id) {
-              enemy.position.copy(players[j].pos);
-              enemy.walkDir.copy(players[j].dir);
-              enemy.lookDir.copy(players[j].look);
-            }
-          }
+          var remote = game.players[enemy.id];
+          enemy.position.copy(remote.pos);
+          enemy.walkDir.copy(remote.dir);
+          enemy.lookDir.copy(remote.look);
         }
       });
       

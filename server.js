@@ -13,8 +13,10 @@ var server = app.listen(port);
 var io = require('socket.io').listen(server);
 io.set('log level', 0);
 
-// holds the currently connected players
-var players = [];
+// holds the state of the current game
+var game = {
+  players: {}
+};
  
 io.sockets.on('connection', function(socket) {
   // a client has connected
@@ -22,16 +24,14 @@ io.sockets.on('connection', function(socket) {
   var player;  
   
   // initialize the client
-  socket.emit('init', players);
+  socket.emit('init', game);
   socket.join('game');
   
   socket.on('disconnect', function () {
     // a client has left
     socket.leave('game');
     socket.broadcast.to('game').emit('removeplayer', player);
-    players = players.filter(function (player) {
-      return player.id !== socket.id;
-    });
+    delete game.players[socket.id];
   });  
   
   socket.on('playerstate', function (data) {
@@ -39,12 +39,13 @@ io.sockets.on('connection', function(socket) {
     var firstUpdate = player === undefined;
     player = player || {
       id: socket.id
-    }
+    };
+    player.lastUpdate = Date.now();
     player.pos = data.pos;
     player.dir = data.dir;
     player.look = data.look;
     if (firstUpdate) {
-      players.push(player);
+      game.players[socket.id] = player;
       socket.broadcast.to('game').emit('addplayer', player);
     }
   });  
@@ -53,5 +54,10 @@ io.sockets.on('connection', function(socket) {
 
 // update the state of all connected clients
 setInterval(function () {
-  io.sockets.in('game').emit('gamestate', players);
+  var now = Date.now();
+  for (var playerid in game.players) {
+    var player = game.players[playerid];
+    player.delta = player.lastUpdate - now;
+  }
+  io.sockets.in('game').emit('gamestate', game);
 }, 50);
