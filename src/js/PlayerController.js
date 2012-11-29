@@ -87,7 +87,7 @@ game.PlayerController = (function () {
       switch (e.button) {
         case 0: // left
           this.leftMouseBtn = true;
-          this.world.player.shoot(this.world);
+          this.shoot();
           break;
         case 2: // right
           this.rightMouseBtn = true;
@@ -154,7 +154,7 @@ game.PlayerController = (function () {
   };
   
   // try to move the player along track
-  // returns an alternative
+  // returns an alternative track
   PlayerController.prototype.moveAndCollide = function (track) {
     
     var player = this.world.player;
@@ -262,6 +262,13 @@ game.PlayerController = (function () {
     
     return altTrack;
   };
+  
+  
+  // let the player shoot
+  PlayerController.prototype.shoot = function () {
+    var player = world.player;
+    this.world.addBullet(player.position.clone(), player.lookDir.clone());
+  }
   
   return PlayerController;
 

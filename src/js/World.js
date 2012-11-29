@@ -99,7 +99,7 @@ game.World = (function () {
   
   // update the world with a timeframe of delta
   World.prototype.update = function (delta) {
-    this.player.update(delta, this);
+    this.player.update(delta);
     this.updateEnemies(delta);
     this.updateBullets(delta);
     this.hidingLight.position.set(this.player.position.x, this.player.position.y, 100);
@@ -111,7 +111,7 @@ game.World = (function () {
   // update the camera to follow the player
   World.prototype.updateEnemies = function (delta) {
     for (var i = 0; i < this.enemies.length; i++) {
-      this.enemies[i].update(delta, this);
+      this.enemies[i].update(delta);
     }
   };
   

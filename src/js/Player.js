@@ -35,18 +35,12 @@ game.Player = (function() {
   };
   
   // Update player state with a timeframe of delta
-  Player.prototype.update = function(delta, world) {
+  Player.prototype.update = function(delta) {
     var angle = game.utils.angleBetweenVector2(new THREE.Vector2(1, 0), this.lookDir);  
     
     // update mesh
     this.mesh.position.set(this.position.x, this.position.y, 0.5);
     this.mesh.rotation.set(0, 0, angle);  
-  };
-  
-  
-  // TODO(Jan): Refactor this into the playercontroller too
-  Player.prototype.shoot = function (world) {
-    world.addBullet(this.position.clone(), this.lookDir.clone());
   };
   
   return Player;
