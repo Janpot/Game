@@ -42,7 +42,6 @@ io.sockets.on('connection', function(socket) {
     };
     player.lastUpdate = Date.now();
     player.pos = data.pos;
-    player.dir = data.dir;
     player.look = data.look;
     if (firstUpdate) {
       game.players[socket.id] = player;

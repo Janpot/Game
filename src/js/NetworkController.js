@@ -18,10 +18,6 @@ game.NetworkController = (function () {
               x: this.world.player.position.x,
               y: this.world.player.position.y
             },
-            dir: {
-              x: this.world.player.walkDir.x,
-              y: this.world.player.walkDir.y
-            },
             look: {
               x: this.world.player.lookDir.x,
               y: this.world.player.lookDir.y
@@ -33,7 +29,6 @@ game.NetworkController = (function () {
       var addPlayer = function (player) {
         var enemy = world.addEnemy(player.id);
         enemy.position.copy(player.pos);
-        enemy.walkDir.copy(player.dir);
         enemy.lookDir.copy(player.look);
       };
       
@@ -62,7 +57,6 @@ game.NetworkController = (function () {
           var enemy = world.enemies[i];
           var remote = game.players[enemy.id];
           enemy.position.copy(remote.pos);
-          enemy.walkDir.copy(remote.dir);
           enemy.lookDir.copy(remote.look);
         }
       });

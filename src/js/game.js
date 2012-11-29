@@ -26,8 +26,8 @@
   
   var world = new game.WorldLoader().load();
   window.world = world;
-  var controls = new game.Controls(world);
-  var network = new game.NetworkController(world);
+  var playerController = new game.PlayerController(world);
+  var networkController = new game.NetworkController(world);
   
   var initViewport = (function() {  
     // variables to store previous state
@@ -40,7 +40,7 @@
         // only resize when size actually changes
         var aspect = viewport.width / viewport.height;
         renderer.setSize(width, height);
-        controls.setSize(width, height);
+        playerController.setSize(width, height);
         world.camera.aspect = width / height;
         world.camera.updateProjectionMatrix();
         prevWidth = width;
@@ -77,7 +77,7 @@
   var update = function (delta) {
     initViewport();
   
-    controls.update(delta);
+    playerController.update(delta);
     world.update(delta);
   };
   
