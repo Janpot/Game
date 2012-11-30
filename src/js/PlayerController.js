@@ -134,9 +134,8 @@ game.PlayerController = (function () {
     var track = new THREE.Vector2().copy(this.arrowDirection)
                                    .normalize()
                                    .multiplyScalar(distance);
-    var altTrack = this.moveAndCollide(track);
-    this.moveAndCollide(altTrack); 
     
+    this.moveAndCollide(track);    
     
     // find the world coordinates
     // pickingray mutates vector so clone()
@@ -149,129 +148,44 @@ game.PlayerController = (function () {
     this.world.setViewPosition(this.player.position);
   };
   
-  // try to move the player along track
-  // returns an alternative track
+  // Move the player along track, colide if necessary
   PlayerController.prototype.moveAndCollide = function (track) {
+    var altTrack = new THREE.Vector2();
+    // test primary track
+    var s = game.dynamics.collideCircleWorld(
+      this.player.position, this.player.boundingRadius, 
+      track, 
+      this.world,
+      altTrack
+    );
     
-    // threshold for movement to avoid getting stuck in the wall (between [0, 1])
-    var threshold = 0.01;
-    
-    // alternative track for the player
-    var altTrack = new THREE.Vector2(0, 0);
-    
-    // temporary alternative track for intermediate calculations
-    var tmpAltTrack = new THREE.Vector2(0, 0);
-    
-    // fraction of distance to travel
-    var s = 1;
-    
-    // calculate bounding box for the moving player
-    var movementBounds = new THREE.Rectangle();
-    movementBounds.addPoint(this.player.position.x, this.player.position.y);
-    movementBounds.addPoint(this.player.position.x + track.x, this.player.position.y + track.y);
-    movementBounds.inflate(this.player.boundingRadius);
-    
-    // bounding box for objects to collide with
-    var objectBounds = new THREE.Rectangle();
-    
-    // collide with walls
-    for (var i = 0; i < this.world.walls.length; i++) {      
-      var wall = this.world.walls[i];    
-      
-      // quickly test bounding boxes to avoid extra calculations
-      if (!wall.bounds.intersects(movementBounds)) {
-        // early out
-        continue;
-      }
+    // move player
+    if (s === undefined) {
+      this.player.position.addSelf(track);
+    } else {
+      // cut player path
+      this.player.position.addSelf(track.multiplyScalar(s))
         
-           
-      var objCount = wall.corners.length;
-      for (var j = 0; j < objCount; j++) {
-        // current wall: (p1, p2)
-        var p1 = wall.corners[j];
-        var p2 = wall.corners[(j + 1) % objCount];
-        
-        // quickly test bounding boxes to avoid extra calculations
-        objectBounds.empty();
-        objectBounds.addPoint(p1.x, p1.y);
-        objectBounds.addPoint(p2.x, p2.y);        
-        if (!objectBounds.intersects(movementBounds)) {
-          // early out
-          continue;
-        }
-        
-        // calculate the collision
-        var wallVector = new THREE.Vector2().sub(p2, p1);
-        var sWall = game.dynamics.collideCirclePolySegment(
-          this.player.position, 
-          this.player.boundingRadius, 
-          track, p1, wallVector, tmpAltTrack);
-        
-        if (sWall !== undefined) {
-          // We have a collision
-          
-          // apply threshold
-          sWall = Math.max(sWall - threshold, 0);
-          
-          if (sWall < s) {
-            // Collision is closer on the track than previous collisions          
-            s = sWall;
-            altTrack.copy(tmpAltTrack);
-          }
-        }
-      }
-    }
-    
-    // collide with other players
-    for (var i = 0; i < this.world.players.length; i++) {
-      var enemy = this.world.players[i];
-      
-      if (enemy === this.player) {
-        // don't collide with self
-        continue;
-      }
-      
-      objectBounds.empty();
-      objectBounds.addPoint(enemy.position.x - enemy.boundingRadius, enemy.position.y - enemy.boundingRadius);
-      objectBounds.addPoint(enemy.position.x + enemy.boundingRadius, enemy.position.y + enemy.boundingRadius);
-      
-      // quickly test bounding boxes to avoid extra calculations
-      if (!objectBounds.intersects(movementBounds)) {
-        // early out
-        continue;
-      }
-      
-      var sEnemy = game.dynamics.collideCircleCircle(
+      // player collided, test alternative track
+      s = game.dynamics.collideCircleWorld(
         this.player.position, this.player.boundingRadius, 
-        track, 
-        enemy.position, enemy.boundingRadius, 
-        tmpAltTrack);
+        altTrack, 
+        this.world
+      );
       
-      if (sEnemy !== undefined) {
-        // We have a collision
-        
-        // apply threshold
-        sEnemy = Math.max(sEnemy - threshold, 0);
-        
-        if (sEnemy < s) {
-          // Collision is closer on the track than previous collisions          
-          s = sEnemy;
-          altTrack.copy(tmpAltTrack);
-        }
+      // move player over alternative track
+      if (s === undefined) {
+        this.player.position.addSelf(altTrack);
+      } else {
+        this.player.position.addSelf(altTrack.multiplyScalar(s))
       }
-    }
-    
-    // move the player
-    this.player.position.addSelf(track.multiplyScalar(s));
-    
-    return altTrack;
+    } 
   };
-  
   
   // let the player shoot
   PlayerController.prototype.shoot = function () {
     this.world.addBullet(this.player.position.clone(), this.player.lookDir.clone());
-  }
+  };
   
   return PlayerController;
 

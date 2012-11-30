@@ -102,7 +102,7 @@ game.dynamics = (function () {
       return game.dynamics.collidePointCircle(C1, track, C2, r1 + r2, altTrack);
     },
     
-    // collide a circle (C1, r1) moving along a vector (track) with a Segment of a polygon (L, u)
+    // collide a circle (C, r) moving along a vector (track) with a Segment of a polygon (L, u)
     // this function is used in detecting collisions with a side of a polygon so only one 
     // endpoint off the line is collided
     // returns a fraction of track between [0, 1] or undefined when no collision
@@ -121,6 +121,127 @@ game.dynamics = (function () {
       }
       // collide with the endpoint
       return game.dynamics.collidePointCircle(C, track, L, r, altTrack);
+    },
+    
+    // collide a circle (C, r) moving along a vector (track) with a World
+    // returns a fraction of track between [0, 1] or undefined when no collision
+    // sets altTrack to an alternative track if it is provided
+    collideCircleWorld: function (C, r, track, world, altTrack) {      
+      
+      // threshold for movement to avoid getting stuck in the wall (between [0, 1])
+      var threshold = 0.01;
+      
+      // temporary alternative track for intermediate calculations
+      // don't use it if altTrack is not defined
+      var tmpAltTrack = undefined;
+      if (altTrack !== undefined) {
+        tmpAltTrack = new THREE.Vector2();
+      }
+      
+      // fraction of distance to travel
+      var s = undefined;
+      
+      // calculate bounding box for the moving player
+      var movementBounds = new THREE.Rectangle();
+      movementBounds.addPoint(C.x, C.y);
+      movementBounds.addPoint(C.x + track.x, C.y + track.y);
+      movementBounds.inflate(r);
+      
+      // bounding box for objects to collide with
+      var objectBounds = new THREE.Rectangle();
+      
+      // collide with walls
+      for (var i = 0; i < world.walls.length; i++) {      
+        var wall = world.walls[i];    
+        
+        // quickly test bounding boxes to avoid extra calculations
+        if (!wall.bounds.intersects(movementBounds)) {
+          // early out
+          continue;
+        }
+          
+             
+        var objCount = wall.corners.length;
+        for (var j = 0; j < objCount; j++) {
+          // current wall: (p1, p2)
+          var p1 = wall.corners[j];
+          var p2 = wall.corners[(j + 1) % objCount];
+          
+          // quickly test bounding boxes to avoid extra calculations
+          objectBounds.empty();
+          objectBounds.addPoint(p1.x, p1.y);
+          objectBounds.addPoint(p2.x, p2.y);        
+          if (!objectBounds.intersects(movementBounds)) {
+            // early out
+            continue;
+          }
+          
+          // calculate the collision
+          var wallVector = new THREE.Vector2().sub(p2, p1);
+          var sWall = game.dynamics.collideCirclePolySegment(
+            C, 
+            r, 
+            track, p1, wallVector, tmpAltTrack);
+          
+          if (sWall !== undefined) {
+            // We have a collision
+            
+            // apply threshold
+            sWall = Math.max(sWall - threshold, 0);
+            
+            if (s === undefined || sWall < s) {
+              // Collision is closer on the track than previous collisions          
+              s = sWall;
+              if (altTrack !== undefined) {
+                altTrack.copy(tmpAltTrack);
+              }
+            }
+          }
+        }
+      }
+      
+      // collide with other players
+      for (var i = 0; i < world.players.length; i++) {
+        var enemy = world.players[i];
+        
+        if (enemy === this.player) {
+          // don't collide with self
+          continue;
+        }
+        
+        objectBounds.empty();
+        objectBounds.addPoint(enemy.position.x - enemy.boundingRadius, enemy.position.y - enemy.boundingRadius);
+        objectBounds.addPoint(enemy.position.x + enemy.boundingRadius, enemy.position.y + enemy.boundingRadius);
+        
+        // quickly test bounding boxes to avoid extra calculations
+        if (!objectBounds.intersects(movementBounds)) {
+          // early out
+          continue;
+        }
+        
+        var sEnemy = game.dynamics.collideCircleCircle(
+          C, r, 
+          track, 
+          enemy.position, enemy.boundingRadius, 
+          tmpAltTrack);
+        
+        if (sEnemy !== undefined) {
+          // We have a collision
+          
+          // apply threshold
+          sEnemy = Math.max(sEnemy - threshold, 0);
+          
+          if (s === undefined || sEnemy < s) {
+            // Collision is closer on the track than previous collisions          
+            s = sEnemy;
+            if (altTrack !== undefined) {
+              altTrack.copy(tmpAltTrack);
+            }
+          }
+        }
+      }
+      
+      return s;
     }
     
   };
