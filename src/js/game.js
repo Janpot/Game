@@ -30,8 +30,10 @@
   var player = new game.Player({
     position: new THREE.Vector2(0, 0)
   });
-  var playerController = new game.PlayerController(world, player);
-  var networkController = new game.NetworkController(world, player);
+  
+  var socket = io.connect(location.origin);
+  var playerController = new game.PlayerController(world, player, socket);
+  var networkController = new game.NetworkController(world, player, socket);
   
   var initViewport = (function() {  
     // variables to store previous state

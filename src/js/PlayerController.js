@@ -3,12 +3,13 @@ var game = game || {};
 // controls for a player
 game.PlayerController = (function () {
   
-  var PlayerController = function (world, player) {
+  var PlayerController = function (world, player, socket) {
     
     this.width = 0;
     this.height = 0;
     
     this.player = player;
+    this.socket = socket;
     this.world = world;
     world.addPlayer(player);
     
@@ -112,13 +113,15 @@ game.PlayerController = (function () {
     var onContextMenu = function (e) {
       e.preventDefault();
     };
-        
+    
     window.addEventListener('keyup', game.utils.bind(this, keyUp), false);
     window.addEventListener('keydown', game.utils.bind(this, keyDown), false);  
     window.addEventListener('mousemove', game.utils.bind(this, mouseMove), false);
     window.addEventListener('mousedown', game.utils.bind(this, mouseDown), false);
     window.addEventListener('mouseup', game.utils.bind(this, mouseUp), false);
     window.addEventListener('contextmenu', game.utils.bind(this, onContextMenu), false);
+    this.socket.on('connect', game.utils.bind(this, this.onConnect));
+    
   };
   
   // Set the proper size of this object to calculate the mouseposition
@@ -185,6 +188,23 @@ game.PlayerController = (function () {
   // let the player shoot
   PlayerController.prototype.shoot = function () {
     this.world.addBullet(this.player.position.clone(), this.player.lookDir.clone());
+  };
+  
+  PlayerController.prototype.onConnect = function() {
+    // set the id of the player (in the futer this would be the username or something, it will be defined up front)
+    this.player.id = this.socket.socket.sessionid;
+    console.log('this is ' + this.player.id);
+    this.startSendingState();
+  };    
+  
+  // set up the loop for sending the player's state to the server
+  PlayerController.prototype.startSendingState = function () {
+    setInterval(game.utils.bind(this, this.sendState), 50);
+  };
+  
+  // Send the player's state to the server
+  PlayerController.prototype.sendState = function () {
+    this.socket.emit('playerstate', this.player.getState());
   };
   
   return PlayerController;

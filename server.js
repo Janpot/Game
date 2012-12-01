@@ -34,17 +34,16 @@ io.sockets.on('connection', function(socket) {
     delete game.players[socket.id];
   });  
   
-  socket.on('playerstate', function (data) {
+  socket.on('playerstate', function (remote) {
     // the client updates its state
     var firstUpdate = player === undefined;
-    player = player || {
-      id: socket.id
-    };
+    
+    player = remote;
+    player.id = socket.id      
     player.lastUpdate = Date.now();
-    player.pos = data.pos;
-    player.look = data.look;
+    
+    game.players[socket.id] = player;
     if (firstUpdate) {
-      game.players[socket.id] = player;
       socket.broadcast.to('game').emit('addplayer', player);
     }
   });  

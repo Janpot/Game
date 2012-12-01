@@ -43,6 +43,28 @@ game.Player = (function() {
     this.mesh.rotation.set(0, 0, angle);  
   };
   
+  // returns a serializable object representing the state of this player
+  Player.prototype.getState = function() {
+    return {
+      position: {
+        x: this.position.x,
+        y: this.position.y
+      },
+      lookDir: {
+        x: this.lookDir.x,
+        y: this.lookDir.y
+      }
+    }
+    // TODO(jan): Use this in the networkcontroller
+  };
+  
+  // sets the state of this player to a provided state, same configuration as
+  // returned from getState()
+  Player.prototype.setState = function(state) {
+    this.position.copy(state.position);
+    this.lookDir.copy(state.lookDir);
+  };
+  
   return Player;
   
 })();

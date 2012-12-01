@@ -3,22 +3,18 @@ var game = game || {};
 // controls the multiplayer aspect of the game
 game.NetworkController = (function () {
   
-  var NetworkController = function (world, player) {
+  var NetworkController = function (world, player, socket) {
     this.world = world;
     this.player = player;    
     this.enemies = {};
     this.gameState = {};
     
     // connect to the server
-    this.socket = io.connect(location.origin);
+    this.socket = socket;
     this.socket.on('connect', game.utils.bind(this, this.onConnect));
   };
   
   NetworkController.prototype.onConnect = function() {
-    // set the id of the player (in the futer this would be the username or something, it will be defined up front)
-    this.player.id = this.socket.socket.sessionid;
-    console.log('this is ' + this.player.id);
-    
     // called by the server to initialize this client
     this.socket.on('init', game.utils.bind(this, this.onIntialize));
     
@@ -39,8 +35,7 @@ game.NetworkController = (function () {
       var enemy = new game.Player({
         color: 0x0000FF
       });        
-      enemy.position.copy(remote.pos);
-      enemy.lookDir.copy(remote.look);
+      enemy.setState(remote);
       enemy.id = remote.id;
       
       this.enemies[remote.id] = enemy;
@@ -61,26 +56,6 @@ game.NetworkController = (function () {
     for (var playerid in game.players) {          
       this.addPlayer(game.players[playerid]);          
     }
-    this.startSendingState();
-  };  
-  
-  // set up the loop for sending the player's state to the server
-  NetworkController.prototype.startSendingState = function () {
-    setInterval(game.utils.bind(this, this.sendState), 50);
-  };
-  
-  // Send the player's state to the server
-  NetworkController.prototype.sendState = function () {
-    this.socket.emit('playerstate', {
-      pos: {
-        x: this.player.position.x,
-        y: this.player.position.y
-      },
-      look: {
-        x: this.player.lookDir.x,
-        y: this.player.lookDir.y
-      }
-    });
   };
   
   // update the current state with new info from the server
@@ -98,8 +73,7 @@ game.NetworkController = (function () {
       var enemy = this.enemies[enemyid];
       var remote = this.gameState.players[enemyid];
       if (remote) {
-        enemy.position.copy(remote.pos);
-        enemy.lookDir.copy(remote.look);
+        enemy.setState(remote);
       }
     }
   };
