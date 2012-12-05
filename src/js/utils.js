@@ -56,6 +56,10 @@ game.utils = (function () {
       } else {
         return dot > 0 ? 1 : -1;
       };
+    },
+    
+    interpolate: function(a, b, fraction) {
+      return (a + (b - a) * fraction);
     }
   
   }

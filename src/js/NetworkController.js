@@ -27,12 +27,12 @@ game.NetworkController = (function () {
   PlayerStateBuffer.prototype.interpolateStates = function (state1, state2, s) {
     return {
       position: {
-        x: state1.position.x + (state2.position.x - state1.position.x) * s,
-        y: state1.position.y + (state2.position.y - state1.position.y) * s
+        x: game.utils.interpolate(state1.position.x, state2.position.x, s),
+        y: game.utils.interpolate(state1.position.y, state2.position.y, s)
       },
       lookDir: {
-        x: state1.lookDir.x + (state2.lookDir.x - state1.lookDir.x) * s,
-        y: state1.lookDir.y + (state2.lookDir.y - state1.lookDir.y) * s
+        x: game.utils.interpolate(state1.lookDir.x, state2.lookDir.x, s),
+        y: game.utils.interpolate(state1.lookDir.y, state2.lookDir.y, s)
       }
     }
   };
@@ -76,10 +76,7 @@ game.NetworkController = (function () {
     this.socket.on('init', game.utils.bind(this, this.onIntialize));
     
     // add a player when the server signals a new player has arrived
-    this.socket.on('addplayer', game.utils.bind(this, this.addPlayer));
-    
-    // remove a player when the server signals a player has left
-    this.socket.on('removeplayer', game.utils.bind(this, this.removePlayer));
+    /*this.socket.on('addplayer', game.utils.bind(this, this.addPlayer));*/
     
     // update the state when the server sends an update
     this.socket.on('gamestate', game.utils.bind(this, this.updateGameState));
@@ -88,29 +85,27 @@ game.NetworkController = (function () {
   // add a player to the game
   NetworkController.prototype.addPlayer = function (remote) {
     console.log('adding ' + remote.id);
-    if (remote.id !== this.player.id) {
-      var enemy = new game.Player({
-        color: 0x0000FF
-      });        
-      enemy.setState(remote.state);
-      enemy.id = remote.id;
-      
-      this.enemies[remote.id] = enemy;      
-      
-      var now = window.performance.now();
-      this.stateBuffers[remote.id] = new PlayerStateBuffer();
-      this.stateBuffers[remote.id].add(now + remote.delta, remote.state);
-      world.addPlayer(enemy);
-    }
+    var enemy = new game.Player({
+      color: 0x0000FF
+    });        
+    enemy.setState(remote.state);
+    enemy.id = remote.id;
+    
+    this.enemies[remote.id] = enemy;      
+    
+    var now = window.performance.now();
+    this.stateBuffers[remote.id] = new PlayerStateBuffer();
+    this.stateBuffers[remote.id].add(now + remote.delta, remote.state);
+    world.addPlayer(enemy);
   };
   
   // remove a player from the game
-  NetworkController.prototype.removePlayer = function (remote) {
-    console.log('removing ' + remote.id);
-    var enemy = this.enemies[remote.id]
+  NetworkController.prototype.removePlayer = function (id) {
+    console.log('removing ' + id);
+    var enemy = this.enemies[id]
     this.world.removePlayer(enemy);
-    delete this.stateBuffers[remote.id];
-    delete this.enemies[remote.id];
+    delete this.stateBuffers[id];
+    delete this.enemies[id];
   };
   
   // initialize the game
@@ -124,8 +119,18 @@ game.NetworkController = (function () {
   NetworkController.prototype.updateGameState = function (game) {
     for (var enemyid in this.enemies) {
       var remote = game.players[enemyid];
-      var now = window.performance.now();
-      this.stateBuffers[enemyid].add(now + remote.delta, remote.state);
+      if (remote === undefined) {
+        this.removePlayer(enemyid);
+      } else {
+        var now = window.performance.now();
+        this.stateBuffers[enemyid].add(now + remote.delta, remote.state);
+      }
+    }
+    
+    for (var enemyid in game.players) {
+      if (enemyid !== this.player.id && this.enemies[enemyid] === undefined) {
+        this.addPlayer(game.players[enemyid]);
+      }
     }
   };
   

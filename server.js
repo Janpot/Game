@@ -65,29 +65,20 @@ io.sockets.on('connection', function(socket) {
   socket.on('disconnect', function () {
     // a client has left
     socket.leave('game');
-    socket.broadcast.to('game').emit('removeplayer', player);
     delete game.players[socket.id];
   });  
   
   socket.on('playerstate', function (remote) {
-    // the client updates its state
-    var firstUpdate = player === undefined;
     player = player || {};
     player.id = socket.id;
     player.state = remote;     
-    player.lastUpdate = Date.now();
-    
+    player.lastUpdate = Date.now();    
     game.players[socket.id] = player;
-    if (firstUpdate) {
-      updateDeltas();
-      socket.broadcast.to('game').emit('addplayer', player);
-    }
-  });  
+  });
+  
+  setInterval(function () {
+    updateDeltas();
+    socket.emit('gamestate', game);
+  }, 50);
   
 });
-
-// update the state of all connected clients
-setInterval(function () {
-  updateDeltas();
-  io.sockets.in('game').emit('gamestate', game);
-}, 50);
