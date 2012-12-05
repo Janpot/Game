@@ -72,12 +72,6 @@ game.NetworkController = (function () {
   };
   
   NetworkController.prototype.onConnect = function() {
-    // called by the server to initialize this client
-    this.socket.on('init', game.utils.bind(this, this.onIntialize));
-    
-    // add a player when the server signals a new player has arrived
-    /*this.socket.on('addplayer', game.utils.bind(this, this.addPlayer));*/
-    
     // update the state when the server sends an update
     this.socket.on('gamestate', game.utils.bind(this, this.updateGameState));
   };
@@ -108,20 +102,15 @@ game.NetworkController = (function () {
     delete this.enemies[id];
   };
   
-  // initialize the game
-  NetworkController.prototype.onIntialize = function (game) {
-    for (var playerid in game.players) {          
-      this.addPlayer(game.players[playerid]);          
-    }
-  };
-  
   // update the current state with new info from the server
   NetworkController.prototype.updateGameState = function (game) {
     for (var enemyid in this.enemies) {
       var remote = game.players[enemyid];
       if (remote === undefined) {
+        // this player has left, remove him
         this.removePlayer(enemyid);
       } else {
+        // update the buffer of this player
         var now = window.performance.now();
         this.stateBuffers[enemyid].add(now + remote.delta, remote.state);
       }
@@ -129,14 +118,14 @@ game.NetworkController = (function () {
     
     for (var enemyid in game.players) {
       if (enemyid !== this.player.id && this.enemies[enemyid] === undefined) {
+        // this is a new player, add him
         this.addPlayer(game.players[enemyid]);
       }
     }
   };
   
   // update the world with the current state
-  NetworkController.prototype.update = function (delta) {
-    
+  NetworkController.prototype.update = function (delta) {    
     var offsetNow = window.performance.now() - this.offset;
     for (var enemyid in this.enemies) {
       var enemy = this.enemies[enemyid];

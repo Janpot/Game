@@ -55,20 +55,15 @@ var updateDeltas = function() {
 io.sockets.on('connection', function(socket) {
   // a client has connected
   
-  var player;  
-  
-  // initialize the client
-  updateDeltas();
-  socket.emit('init', game);
-  socket.join('game');
+  var player;
   
   socket.on('disconnect', function () {
-    // a client has left
-    socket.leave('game');
+    // the client has left
     delete game.players[socket.id];
   });  
   
   socket.on('playerstate', function (remote) {
+    // update the game on the server
     player = player || {};
     player.id = socket.id;
     player.state = remote;     
@@ -77,6 +72,7 @@ io.sockets.on('connection', function(socket) {
   });
   
   setInterval(function () {
+    // update the client
     updateDeltas();
     socket.emit('gamestate', game);
   }, 50);
