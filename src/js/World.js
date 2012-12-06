@@ -193,13 +193,13 @@ game.World = (function () {
   World.prototype.setMode = function (mode) {  
     switch (mode) {
       case this.VISIBLE_PARTS:
-        this.setEnvironmentVisible(true);    
+        this.setEnvironmentVisible(true);
         this.setHidingblocksVisible(false);
         this.setPlayersVisible(true);
         this.setBulletsVisible(true);
         break;
       case this.OBSCURED_PARTS:
-        this.setEnvironmentVisible(true); 
+        this.setEnvironmentVisible(true);
         this.setHidingblocksVisible(false);
         this.setPlayersVisible(false);
         this.setBulletsVisible(false);
@@ -207,13 +207,14 @@ game.World = (function () {
         this.playerLight.visible = false;
         break;
       case this.OBSCURING_MASK:
-        this.setEnvironmentVisible(false); 
+        this.setEnvironmentVisible(false);
         this.setHidingblocksVisible(true);
         this.setPlayersVisible(false);
         this.setBulletsVisible(false);
         this.hidingLight.visible = false;
         this.playerLight.visible = true;
         break;
+      default:;
     }
   };
   
