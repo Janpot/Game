@@ -3,63 +3,49 @@ var game = game || {};
 game.WorldLoader = (function () {
   
   var WorldLoader = function() {
-    
+    this.sceneLoader = new THREE.SceneLoader();    
   };
   
-  WorldLoader.prototype.load = function () {
+  WorldLoader.prototype.parse = function (data, callback) {
     
-    var world = new game.World();
+    var result = new game.World();
     
-    // counterclockwise
-    world.walls.push(
-      new game.Wall({
-        corners: [
-          new THREE.Vector2(10, 10),
-          new THREE.Vector2(25, 10),
-          new THREE.Vector2(30, 27),
-          new THREE.Vector2(20, 30),
-          new THREE.Vector2(20, 40)
-        ]
-      })
-    );
+    for (var i = 0; i < data.walls.length; i++) {
+      var wall = new game.Wall({
+        corners: data.walls[i].corners.map(function (corner) { 
+            return new THREE.Vector2(corner[0], corner[1]);
+          })
+      });
+      
+      result.walls.push(wall);
+    }
     
-    //clockwise
-    world.walls.push(
-      new game.Wall({
-        corners: [
-          new THREE.Vector2(-20, 10),
-          new THREE.Vector2(-20, 30),
-          new THREE.Vector2(-10, 30),
-          new THREE.Vector2(-10, 10)
-        ]
-      })
-    );
+    this.sceneLoader.load(data.scene, function(data) {
+      result.environment = data.objects;
+      result.scene = data.scene;
+      result.init();
+      callback(result);
+    });
     
-    // counterclockwise
-    world.walls.push(
-      new game.Wall({
-        corners: [
-          new THREE.Vector2(40, 15),
-          new THREE.Vector2(60, 10),
-          new THREE.Vector2(63, 27),
-          new THREE.Vector2(50, 45),
-          new THREE.Vector2(45, 40)
-        ]
-      })
-    );
+  }
+  
+  WorldLoader.prototype.load = function (url, callback) {
     
-    var shape = new THREE.Shape();
-    shape.fromPoints([
-      new THREE.Vector3(-2000, -2000, 0), 
-      new THREE.Vector3(2000, -2000, 0),
-      new THREE.Vector3(2000, 2000, 0),
-      new THREE.Vector3(-2000, 2000, 0)
-    ]);
-    world.floor = new THREE.Mesh(shape.extrude({amount: 0, bevelEnabled: false}), new THREE.MeshPhongMaterial({color: 0xA3E3D3}));    
-        
-    world.init();    
-    
-    return world;
+    var xhr = new XMLHttpRequest();
+
+	xhr.onreadystatechange = game.utils.bind(this, function () {
+      if (xhr.readyState === 4) {
+        if (xhr.status === 200 || xhr.status === 0) {
+          var json = JSON.parse(xhr.responseText);
+          this.parse(json, callback);
+        } else {
+          console.error("game.WorldLoader: Couldn't load [" + url + "] [" + xhr.status + "]");
+        }
+      }
+	});
+
+	xhr.open( "GET", url, true );
+	xhr.send( null );
     
   };
   

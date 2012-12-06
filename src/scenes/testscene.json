@@ -1,0 +1,114 @@
+{
+  "metadata": {
+    "formatVersion" : 3.2,
+    "type"		: "scene",
+    "objects"       : 3,
+    "geometries"    : 3,
+    "materials"     : 2,
+    "textures"      : 0
+  },
+
+  "urlBaseType": "relativeToScene",
+
+  "objects" :
+  {
+    "Floor" : {
+      "geometry" : "FloorGeom",
+      "material" : "FloorMaterial",
+      "position" : [0,0,0],
+      "rotation" : [0,0,0],
+      "scale"	   : [1,1,1],
+      "visible"  : true
+    },
+
+    "Building1" : {
+      "geometry" : "Building1Geom",
+      "material" : "BuildingMaterial",
+      "position" : [10,20,2],
+      "rotation" : [0,0,0],
+      "scale"	   : [1,1,1],
+      "visible"  : true
+    },
+
+    "Building2" : {
+      "geometry" : "Building2Geom",
+      "material" : "BuildingMaterial",
+      "position" : [50,10,2],
+      "rotation" : [0,0,0],
+      "scale"	   : [1,1,1],
+      "visible"  : true
+    }
+  },
+
+  "geometries" :
+  {
+    "FloorGeom": {
+      "type"    : "plane",
+      "width"  : 2000,
+      "height"  : 2000,
+      "widthSegments"  : 1,
+      "heightSegments" : 1
+    },
+
+    "Building1Geom": {
+      "type"    : "cube",
+      "width"  : 30,
+      "height"  : 30,
+      "depth"  : 4,
+      "widthSegments"  : 1,
+      "heightSegments" : 1,
+      "depthSegments" : 1
+    },
+
+    "Building2Geom": {
+      "type"    : "cube",
+      "width"  : 20,
+      "height"  : 40,
+      "depth"  : 4,
+      "widthSegments"  : 1,
+      "heightSegments" : 1,
+      "depthSegments" : 1
+    }
+  },
+
+  "materials" :
+  {
+    "FloorMaterial": {
+      "type"    : "MeshPhongMaterial",
+      "parameters"  : {
+        "color"  : 3657403,
+        "ambient"  : 16777215,
+        "emissive"  : 0,
+        "specular"  : 1118481,
+        "shininess" : 30,
+        "bumpScale"  : 1,
+        "reflectivity"  : 1,
+        "transparent" : false,
+        "opacity" : 1,
+        "wireframe" : false,
+        "wireframeLinewidth" : 1
+      }
+    },
+
+    "BuildingMaterial": {
+      "type"    : "MeshPhongMaterial",
+      "parameters"  : {
+        "color"  : 16777215,
+        "ambient"  : 16777215,
+        "emissive"  : 0,
+        "specular"  : 1118481,
+        "shininess" : 30,
+        "bumpScale"  : 1,
+        "reflectivity"  : 1,
+        "transparent" : false,
+        "opacity" : 1,
+        "wireframe" : false,
+        "wireframeLinewidth" : 1
+      }
+    }
+  },
+  
+  "defaults": { 
+    "bgcolor": [1, 1, 1]
+  }
+}

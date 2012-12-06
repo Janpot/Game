@@ -15,18 +15,16 @@ game.World = (function () {
     
     this.scene;
     
+    this.environment = {};
+    
     this.camera = new THREE.PerspectiveCamera(45, 1, 0.1, 1000);
-    this.camera.position.z = 60;
+    this.camera.position.z = 50;
     
     this.walls = [];
     
     this.players = [];
     
-    this.floor;
-    
     this.bullets = [];
-    
-    this.init();
     
   };
   
@@ -63,9 +61,8 @@ game.World = (function () {
 
   // initialize the world
   World.prototype.init = function () {
-    
     // init scene
-    this.scene = new THREE.Scene();      
+    //this.scene = new THREE.Scene();      
     this.scene.add(this.camera);
     
     // light for rendering the hidden parts
@@ -79,16 +76,15 @@ game.World = (function () {
     
     // init walls
     for (var i = 0; i < this.walls.length; i++) {
-      this.scene.add(this.walls[i].mesh);
-      
       var hidingBlocks = this.walls[i].hidingBlocks;
       for (var j = 0; j < hidingBlocks.length; j++) {
         this.scene.add(hidingBlocks[j]);
-      }
-      
-      this.scene.add(this.hidingLight);
-      this.scene.add(this.playerLight);
+      }      
     }
+    
+    // init lights
+    this.scene.add(this.hidingLight);
+    this.scene.add(this.playerLight);
   };
   
   World.prototype.setViewPosition = function (position) {
@@ -137,7 +133,7 @@ game.World = (function () {
     ctx.stencilOp(ctx.REPLACE, ctx.REPLACE, ctx.REPLACE);
     
     // render the mask
-    this.setMode(game.World.obscuringMask);
+    this.setMode(this.OBSCURING_MASK);
     renderer.render(this.scene, this.camera);
     
     // clear the depth buffer after masking
@@ -149,14 +145,14 @@ game.World = (function () {
     ctx.stencilOp(ctx.KEEP, ctx.KEEP, ctx.KEEP);
     
     // render the visible parts
-    this.setMode(game.World.visibleParts);
+    this.setMode(this.VISIBLE_PARTS);
     renderer.render(this.scene, this.camera);
     
     // invert mask
     ctx.stencilFunc(ctx.EQUAL, 0x1, 0x1);
     
     // render the obscured parts
-    this.setMode(game.World.obscuredParts);
+    this.setMode(this.OBSCURED_PARTS);
     renderer.render(this.scene, this.camera);
   };
   
@@ -168,14 +164,14 @@ game.World = (function () {
   };
   
   // Modes for setMode()
-  World.visibleParts = 0;
-  World.obscuredParts = 1;
-  World.obscuringMask = 2;
+  World.prototype.VISIBLE_PARTS = 0;
+  World.prototype.OBSCURED_PARTS = 1;
+  World.prototype.OBSCURING_MASK = 2;
   
   // sets the visibility of the parts of the wall
-  World.prototype.setWallsVisible = function (wallVisible, hidingblockVisible) {
+  World.prototype.setHidingblocksVisible = function (visible) {
     for (var i = 0; i < this.walls.length; i++) {
-      this.walls[i].setVisible(wallVisible, hidingblockVisible);
+      this.walls[i].setHidingblocksVisible(visible);
     }
   };
   
@@ -187,25 +183,32 @@ game.World = (function () {
     }
   };
   
+  // set the visibility of the bullets
+  World.prototype.setEnvironmentVisible = function (visible) {
+    for (var objectid in this.environment) {
+      this.environment[objectid].visible = visible;
+    }
+  };
+  
   World.prototype.setMode = function (mode) {  
     switch (mode) {
-      case World.visibleParts:
-        this.floor.visible = true;      
-        this.setWallsVisible(true, false);
+      case this.VISIBLE_PARTS:
+        this.setEnvironmentVisible(true);    
+        this.setHidingblocksVisible(false);
         this.setPlayersVisible(true);
         this.setBulletsVisible(true);
         break;
-      case World.obscuredParts:
-        this.floor.visible = true;
-        this.setWallsVisible(true, false);
+      case this.OBSCURED_PARTS:
+        this.setEnvironmentVisible(true); 
+        this.setHidingblocksVisible(false);
         this.setPlayersVisible(false);
         this.setBulletsVisible(false);
         this.hidingLight.visible = true;
         this.playerLight.visible = false;
         break;
-      case World.obscuringMask:
-        this.floor.visible = false;
-        this.setWallsVisible(false, true);
+      case this.OBSCURING_MASK:
+        this.setEnvironmentVisible(false); 
+        this.setHidingblocksVisible(true);
         this.setPlayersVisible(false);
         this.setBulletsVisible(false);
         this.hidingLight.visible = false;

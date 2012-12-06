@@ -11,28 +11,12 @@ game.Wall = (function () {
     // bounding box of the wall in 2D space
     this.bounds = new THREE.Rectangle();
     
-    // the 3D model of the wall
-    this.mesh;
-    
     // the collection of hidden areas as rays in 2D space
     this.hidden = [];
     
     // the 3D geometry for the hidden areas
     this.hidingBlocks = [];
     
-    
-    
-    // create mesh
-    var height = 3;  
-    var lowerVertices = [];
-    for (var i = 0; i < this.corners.length; i++) {
-      this.bounds.addPoint(this.corners[i].x, this.corners[i].y);
-      lowerVertices.push(new THREE.Vector3(this.corners[i].x, this.corners[i].y, 0));
-    }
-    var shape = new THREE.Shape();
-    shape.fromPoints(lowerVertices);  
-    var material = new THREE.MeshPhongMaterial({ color: 0x00CC00 });
-    this.mesh = new THREE.Mesh(shape.extrude({amount: height, bevelEnabled: false}), material);
     
     // each hidden area consists of 2 2D rays in the XY plane
     // initialize the objects up front for performance
@@ -128,10 +112,9 @@ game.Wall = (function () {
   };
   
   // sets the visibility of the walls and the hidingblocks
-  Wall.prototype.setVisible = function (wallVisible, hidingblockVisible) {  
-    this.mesh.visible = wallVisible;
+  Wall.prototype.setHidingblocksVisible = function (visible) {
     for (var i = 0; i < this.hidingBlocks.length; i++) {
-      this.hidingBlocks[i].visible = hidingblockVisible;
+      this.hidingBlocks[i].visible = visible;
     }
   };
   

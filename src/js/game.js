@@ -1,3 +1,6 @@
+
+
+
 (function () {
   
   // TODO(Jan) decide where to put shims like these:
@@ -19,83 +22,85 @@
   
   
   
+  // set up canvas
   var canvas = document.querySelector('#viewport');
   var renderer = new THREE.WebGLRenderer({canvas: canvas});
   renderer.autoClear = false;
   
-  
-  var world = new game.WorldLoader().load();
-  window.world = world;
-  
-  var player = new game.Player({
-    position: new THREE.Vector2(0, 0)
-  });
-  
-  var socket = io.connect(location.origin);
-  var playerController = new game.PlayerController(world, player, socket);
-  var networkController = new game.NetworkController(world, player, socket);
-  
-  var initViewport = (function() {  
-    // variables to store previous state
-    var prevWidth, prevHeight;    
-    return function() {
-      // get the size
-      var width = document.body.clientWidth;
-      var height = document.body.clientHeight;
-      if (width != prevWidth || height != prevHeight) {
-        // only resize when size actually changes
-        var aspect = viewport.width / viewport.height;
-        renderer.setSize(width, height);
-        playerController.setSize(width, height);
-        world.camera.aspect = width / height;
-        world.camera.updateProjectionMatrix();
-        prevWidth = width;
-        prevHeight = height;
-      }    
-    };
-  })();
-  
-  var stats;
-  
-  var init = function() {
-    // Stats library to get framerate
-    container = document.createElement( 'div' );
-    document.body.appendChild( container );
-    stats = new Stats();
-    stats.domElement.style.position = 'absolute';
-    stats.domElement.style.top = '0px';
-    container.appendChild( stats.domElement );
-  }
-  
-  init();
-  
-  // get the time difference between two consecutive calls of this function
-  var getDelta = (function () {
-    var lastCall = window.performance.now();
-    return function () {
-      var now = window.performance.now();
-      var delta = now - lastCall;
-      lastCall = now;
-      return delta / 1000; //s
-    };
-  }) ();
-  
-  var update = function (delta) {
-    initViewport();
-    networkController.update(delta);
-    playerController.update(delta);
-    world.update(delta);
-  };
-  
-  var animate = function () {
-    stats.begin();
-    var delta = getDelta();
-    requestAnimationFrame(animate);
-    update(delta);
-    world.render(renderer);
-    stats.update();
-  };
-  
-  animate();
+  // Stats library to get framerate
+  container = document.createElement( 'div' );
+  document.body.appendChild( container );
+  var stats = new Stats();
+  stats.domElement.style.position = 'absolute';
+  stats.domElement.style.top = '0px';
+  container.appendChild( stats.domElement );
 
+                   
+  var onWorldLoaded = function (world) {    
+    
+    // for debugging purposes
+    window.world = world;
+    
+    var player = new game.Player({
+      position: new THREE.Vector2(0, 0)
+    });
+    
+    var socket = io.connect(location.origin);
+    var playerController = new game.PlayerController(world, player, socket);
+    var networkController = new game.NetworkController(world, player, socket);
+    
+    var initViewport = (function() {  
+      // variables to store previous state
+      var prevWidth, prevHeight;    
+      return function() {
+        // get the size
+        var width = document.body.clientWidth;
+        var height = document.body.clientHeight;
+        if (width != prevWidth || height != prevHeight) {
+          // only resize when size actually changes
+          var aspect = viewport.width / viewport.height;
+          renderer.setSize(width, height);
+          playerController.setSize(width, height);
+          world.camera.aspect = width / height;
+          world.camera.updateProjectionMatrix();
+          prevWidth = width;
+          prevHeight = height;
+        }    
+      };
+    })();
+    
+    // get the time difference between two consecutive calls of this function
+    var getDelta = (function () {
+      var lastCall = window.performance.now();
+      return function () {
+        var now = window.performance.now();
+        var delta = now - lastCall;
+        lastCall = now;
+        return delta / 1000; //s
+      };
+    }) ();
+    
+    var update = function (delta) {
+      initViewport();
+      networkController.update(delta);
+      playerController.update(delta);
+      world.update(delta);
+    };
+    
+    var animate = function () {
+      stats.begin();
+      var delta = getDelta();
+      requestAnimationFrame(animate);
+      update(delta);
+      world.render(renderer);
+      stats.update();
+    };
+    
+    animate();
+
+  };
+  
+  var worldLoader = new game.WorldLoader();  
+  worldLoader.load("/worlds/testworld.json", onWorldLoaded);
+                   
 })();
