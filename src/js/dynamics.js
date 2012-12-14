@@ -1,8 +1,8 @@
 var utils = require('./utils.js');
+var twoD = require('./twoD');
 
 // IMPORTANT: All dynamics functions assume colliding objects are not intersecting or touching at the
 //            start of their tracks. They may have unexpected behaviour when violating this contract.
-
 
 
 // threshold for calculating alternative tracks. The cosine of the perpendicular of the alternative track 
@@ -18,7 +18,7 @@ dynamics.collidePointLine = function (P, track, L, u, altTrack) {
   // As per http://www.softsurfer.com/Archive/algorithm_0104/algorithm_0104B.htm
   
   var v = track;
-  var w = new THREE.Vector2().sub(L, P);
+  var w = new twoD.Vector().sub(L, P);
   
   var perpV = utils.perpendicular(v);
   var perpU = utils.perpendicular(u);
@@ -26,7 +26,7 @@ dynamics.collidePointLine = function (P, track, L, u, altTrack) {
   var t = perpU.dot(w) / perpU.dot(v)
   
   if (0 <= s && s <= 1 && 0 <= t && t <= 1) {      
-    if (altTrack instanceof THREE.Vector2) {
+    if (altTrack instanceof twoD.Vector) {
       // calculate alternative track
       altTrack.copy(u).normalize();
       var distance = track.length();
@@ -49,7 +49,7 @@ dynamics.collidePointLine = function (P, track, L, u, altTrack) {
 // sets altTrack to an alternative track if it is provided
 dynamics.collidePointCircle = function (P, track, C, r, altTrack) {
   
-  var u = new THREE.Vector2().sub(P, C);
+  var u = new twoD.Vector().sub(P, C);
   
   // solve for s: ||P + s*track - C|| = r
   // solve for s: ||u + s*track|| = r
@@ -77,7 +77,7 @@ dynamics.collidePointCircle = function (P, track, C, r, altTrack) {
     
     var s = Math.min(s1, s2);
     if (0 <= s && s <= 1) {
-      if (altTrack instanceof THREE.Vector2) {
+      if (altTrack instanceof twoD.Vector) {
         // calculate the vector between the center of the circle and the collision
         var collisionVector = C.clone().subSelf(P).addSelf(track.clone().multiplyScalar(s));
         // new direction is perpendicular to that
@@ -108,10 +108,10 @@ dynamics.collideCircleCircle = function (C1, r1, track, C2, r2, altTrack) {
 // sets altTrack to an alternative track if it is provided
 dynamics.collideCirclePolySegment = function (C, r, track, L, u, altTrack) {      
   // Offset the line with the radius
-  var w = new THREE.Vector2().sub(C, L);
+  var w = new twoD.Vector().sub(C, L);
   var sign = utils.angleSignBetween(u, w);
   var offsetVector = utils.perpendicular(u).normalize().multiplyScalar(sign * r);
-  var offsetL = new THREE.Vector2().add(L, offsetVector);
+  var offsetL = new twoD.Vector().add(L, offsetVector);
   
   // collide with the line      
   var s = dynamics.collidePointLine(C, track, offsetL, u, altTrack);
@@ -134,20 +134,20 @@ dynamics.collideCircleWorld = function (C, r, track, world, altTrack) {
   // don't use it if altTrack is not defined
   var tmpAltTrack = undefined;
   if (altTrack !== undefined) {
-    tmpAltTrack = new THREE.Vector2();
+    tmpAltTrack = new twoD.Vector();
   }
   
   // fraction of distance to travel
   var s = undefined;
   
   // calculate bounding box for the moving player
-  var movementBounds = new THREE.Rectangle();
+  var movementBounds = new twoD.Rectangle();
   movementBounds.addPoint(C.x, C.y);
   movementBounds.addPoint(C.x + track.x, C.y + track.y);
   movementBounds.inflate(r);
   
   // bounding box for objects to collide with
-  var objectBounds = new THREE.Rectangle();
+  var objectBounds = new twoD.Rectangle();
   
   // collide with walls
   for (var i = 0; i < world.walls.length; i++) {      
@@ -176,7 +176,7 @@ dynamics.collideCircleWorld = function (C, r, track, world, altTrack) {
       }
       
       // calculate the collision
-      var wallVector = new THREE.Vector2().sub(p2, p1);
+      var wallVector = new twoD.Vector().sub(p2, p1);
       var sWall = dynamics.collideCirclePolySegment(
         C, 
         r, 

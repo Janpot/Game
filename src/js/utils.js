@@ -1,3 +1,5 @@
+var twoD = require('./twoD');
+
 var twoPi = 2 * Math.PI;
 
 var utils = module.exports = {};
@@ -33,7 +35,7 @@ utils.intersectXYPlane = function (ray) {
   var t = - ray.origin.z / ray.direction.z;
   var x = ray.origin.x + ray.direction.x * t;
   var y = ray.origin.y + ray.direction.y * t;
-  return new THREE.Vector2(x, y);
+  return new twoD.Vector(x, y);
 };
 
 utils.midPoint = function (P1, P2) {
