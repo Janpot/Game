@@ -1,4 +1,7 @@
-
+var Player = require('./Player.js');
+var PlayerController = require('./PlayerController.js');
+var NetworkController = require('./NetworkController.js');
+var WorldLoader = require('./WorldLoader.js');
 
 // TODO(Jan) decide where to put shims like these:
 // Shim for performance.now()
@@ -38,13 +41,13 @@ var onWorldLoaded = function (world) {
   // for debugging purposes
   window.world = world;
   
-  var player = new game.Player({
+  var player = new Player({
     position: new THREE.Vector2(0, 0)
   });
   
   var socket = io.connect(location.origin);
-  var playerController = new game.PlayerController(world, player, socket);
-  var networkController = new game.NetworkController(world, player, socket);
+  var playerController = new PlayerController(world, player, socket);
+  var networkController = new NetworkController(world, player, socket);
   
   var initViewport = (function() {  
     // variables to store previous state
@@ -97,6 +100,6 @@ var onWorldLoaded = function (world) {
 
 };
 
-var worldLoader = new game.WorldLoader();  
+var worldLoader = new WorldLoader();  
 worldLoader.load("/worlds/testworld.json", onWorldLoaded);
 
