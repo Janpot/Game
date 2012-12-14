@@ -1,8 +1,22 @@
 var express = require('express');
 var app = express();
 var port = 8080;
+
+var browserify = require('browserify');
+var bundle = browserify({
+  entry: './src/js/client.js',
+  mount: '/client.js',
+  watch: true,
+  debug: true
+});
+
+bundle.on('syntaxError', function(err) {
+  console.log(err);
+});
+
 app.configure(function(){
   app.use(express.static(__dirname + '/src'));
+  app.use(bundle);
 });
 
 
