@@ -13,6 +13,7 @@ This game wouldn't be possible without these well known libraries:
 - [three.js](http://threejs.org/)
 - [Express](http://expressjs.com/)
 - [socket.io](http://socket.io/)
+- [Browserify](https://github.com/substack/node-browserify)
 
 ## License
 
