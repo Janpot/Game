@@ -1,6 +1,6 @@
 var Player = require('./Player.js');
-var dynamics = require('./dynamics.js');
-var utils = require('./utils.js');
+var dynamics = require('./shared/dynamics.js');
+var utils = require('./shared/utils.js');
 
 // controls for a player
 var PlayerController = module.exports = function (world, player, socket) {

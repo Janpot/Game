@@ -1,4 +1,4 @@
-var utils = require('./utils.js');
+var utils = require('./shared/utils.js');
 var Player = require('./Player.js');
 var PlayerstateBuffer = require('./PlayerstateBuffer.js');
 

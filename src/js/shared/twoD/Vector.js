@@ -1,3 +1,5 @@
+// this is basically a copy of the three.js Vector2 class
+
 var Vector = module.exports = function (x, y) {
   this.x = x || 0;
   this.y = y || 0;

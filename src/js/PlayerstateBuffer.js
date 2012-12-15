@@ -1,4 +1,4 @@
-var utils = require('./utils.js');
+var utils = require('./shared/utils.js');
 
 // A buffer to store the state for a player so it can be played back
 // with an offset to keep the animation smooth

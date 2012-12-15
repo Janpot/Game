@@ -1,4 +1,4 @@
-var utils = require('./utils.js');
+var utils = require('./shared/utils.js');
 var Wall = require('./wall.js');
 var World = require('./World.js');
 

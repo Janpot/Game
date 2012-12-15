@@ -1,4 +1,4 @@
-var utils = require('./utils');
+var utils = require('./shared/utils');
 
 // describes a player in the field
 var Player = module.exports = function (cfg) {
