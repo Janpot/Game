@@ -11,6 +11,14 @@ utils.bind = function (scope, fn) {
   };
 };
 
+// extend a class
+utils.extend = function (base, sub) {
+  var Tmp = function () { };
+  Tmp.prototype = base.prototype;
+  sub.prototype = new Tmp();
+  sub.prototype.constructor = sub;
+};
+
 utils.angleBetweenVector2 = function (v1, v2) {
   // calculates the angle between two vectors, ranges from -pi to pi
   var angle = Math.atan2(v2.y, v2.x) - Math.atan2(v1.y, v1.x);

@@ -1,7 +1,8 @@
-var Player = require('./Player.js');
+//var Player = require('./Player.js');
 var PlayerController = require('./PlayerController.js');
 var NetworkController = require('./NetworkController.js');
 var WorldLoader = require('./WorldLoader.js');
+var ClientPlayer = require('./ClientPlayer.js');
 
 // set up canvas
 var canvas = document.querySelector('#viewport');
@@ -34,7 +35,6 @@ if (id !== undefined) {
 
 socket.on('initialize', function (config) {
   var worldLoader = new WorldLoader();
-  console.log(config);
   worldLoader.load(config.level, onWorldLoaded);
 });
                  
@@ -43,7 +43,7 @@ var onWorldLoaded = function (world) {
   // for debugging purposes
   window.world = world;
   
-  var player = new Player({
+  var player = new ClientPlayer(socket.socket.sessionid, {
     position: new THREE.Vector2(0, 0)
   });
   

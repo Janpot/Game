@@ -1,6 +1,6 @@
 // this is basically a copy of the three.js Vector2 class
 
-var Vector = module.exports = function (x, y) {
+var Vector = function (x, y) {
   this.x = x || 0;
   this.y = y || 0;
 };
@@ -112,3 +112,5 @@ Vector.prototype.equals = function(v) {
 Vector.prototype.clone = function () {
   return new Vector(this.x, this.y);
 };
+
+module.exports = Vector;

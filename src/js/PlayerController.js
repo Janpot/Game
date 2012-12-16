@@ -1,4 +1,3 @@
-var Player = require('./Player.js');
 var dynamics = require('./shared/dynamics.js');
 var utils = require('./shared/utils.js');
 
@@ -121,7 +120,6 @@ var PlayerController = module.exports = function (world, player, socket) {
   window.addEventListener('mouseup', utils.bind(this, mouseUp), false);
   window.addEventListener('contextmenu', utils.bind(this, onContextMenu), false);
   
-  this.player.id = this.socket.socket.sessionid;
   console.log('this is ' + this.player.id);
   this.startSendingState();
   
@@ -201,5 +199,5 @@ PlayerController.prototype.startSendingState = function () {
 
 // Send the player's state to the server
 PlayerController.prototype.sendState = function () {
-  this.socket.emit('playerstate', this.player.getState());
+  this.socket.emit('playerstate', this.player.serializeState());
 };

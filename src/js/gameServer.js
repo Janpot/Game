@@ -1,5 +1,5 @@
 var utils = require('./shared/utils.js');
-
+var Player = require('./shared/Player.js');
 
 var Game = exports.Game = function (cfg) {
   this.level = cfg.level;
@@ -12,17 +12,15 @@ Game.prototype.connectClient = function (socket) {
   socket.emit('initialize', this.serializeState());
   
   socket.on('playerstate', utils.bind(this, function (remote) {
-    if (this.players[socket.id] === undefined) {
+    var player = this.players[socket.id];
+    if (player === undefined) {
       // first update
-      this.players[socket.id] = {
-        id: socket.id,
-        socket: socket
-      };
+      player = new Player(socket.id, { });
+      player.socket = socket;
+      this.players[socket.id] = player;
     }
     
-    // update the game on the server
-    var player = this.players[socket.id];
-    player.state = remote;     
+    player.unserializeState(remote);     
     player.lastUpdate = Date.now();
   }));
   
@@ -52,7 +50,7 @@ Game.prototype.serializeState = function () {
     players[playerid] = {
       id: playerid,
       delta: player.lastUpdate - now,
-      state: player.state
+      state: player.serializeState()
     }
   }
   

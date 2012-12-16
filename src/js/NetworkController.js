@@ -1,5 +1,5 @@
 var utils = require('./shared/utils.js');
-var Player = require('./Player.js');
+var ClientPlayer = require('./ClientPlayer.js');
 var PlayerstateBuffer = require('./PlayerstateBuffer.js');
 
 
@@ -20,10 +20,10 @@ var NetworkController = module.exports = function (world, player, socket) {
 // add a player to the game
 NetworkController.prototype.addPlayer = function (remote) {
   console.log('adding ' + remote.id);
-  var enemy = new Player({
+  var enemy = new ClientPlayer(remote.id, {
     color: 0x0000FF
   });        
-  enemy.setState(remote.state);
+  enemy.unserializeState(remote.state);
   enemy.id = remote.id;
   
   this.enemies[remote.id] = enemy;      
@@ -71,6 +71,6 @@ NetworkController.prototype.update = function (delta) {
   for (var enemyid in this.enemies) {
     var enemy = this.enemies[enemyid];
     var state = this.stateBuffers[enemyid].interpolate(offsetNow);      
-    enemy.setState(state);      
+    enemy.unserializeState(state);      
   }
 };
