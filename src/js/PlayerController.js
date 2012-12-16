@@ -120,7 +120,10 @@ var PlayerController = module.exports = function (world, player, socket) {
   window.addEventListener('mousedown', utils.bind(this, mouseDown), false);
   window.addEventListener('mouseup', utils.bind(this, mouseUp), false);
   window.addEventListener('contextmenu', utils.bind(this, onContextMenu), false);
-  this.socket.on('connect', utils.bind(this, this.onConnect));
+  
+  this.player.id = this.socket.socket.sessionid;
+  console.log('this is ' + this.player.id);
+  this.startSendingState();
   
 };
 
@@ -189,13 +192,7 @@ PlayerController.prototype.moveAndCollide = function (track) {
 PlayerController.prototype.shoot = function () {
   this.world.addBullet(this.player.position.clone(), this.player.lookDir.clone());
 };
-
-PlayerController.prototype.onConnect = function() {
-  // set the id of the player (in the futer this would be the username or something, it will be defined up front)
-  this.player.id = this.socket.socket.sessionid;
-  console.log('this is ' + this.player.id);
-  this.startSendingState();
-};    
+   
 
 // set up the loop for sending the player's state to the server
 PlayerController.prototype.startSendingState = function () {

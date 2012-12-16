@@ -1,0 +1,36 @@
+<!doctype html>
+<html>
+  <head>
+    <title>game</title>
+    <style type="text/css">
+      html, body {        
+        margin: 0px;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        background-color: #000000;
+      }
+      
+      canvas {
+        display: block;
+        position: absolute;
+        left: 0px;
+        top: 0px;
+      }
+      
+      .loading {
+        display: block;
+        margin: 100px auto;
+      }
+    </style>    
+  </head>
+  <body>
+    <img class="loading" src="/images/loading.gif"/>
+    <canvas id="viewport"></canvas>
+    <script type="text/javascript" src="/js/polyfills.js"></script>
+    <script type="text/javascript" src="/lib/socket.io.js"></script>
+    <script type="text/javascript" src="/lib/stats.min.js"></script>
+    <script type="text/javascript" src="/lib/three.min.js"></script>
+    <script type="text/javascript" src="/client.js"></script>
+  </body>
+</html>

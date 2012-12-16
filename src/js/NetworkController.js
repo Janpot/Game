@@ -14,11 +14,6 @@ var NetworkController = module.exports = function (world, player, socket) {
   
   // connect to the server
   this.socket = socket;
-  this.socket.on('connect', utils.bind(this, this.onConnect));
-};
-
-NetworkController.prototype.onConnect = function() {
-  // update the state when the server sends an update
   this.socket.on('gamestate', utils.bind(this, this.updateGameState));
 };
 

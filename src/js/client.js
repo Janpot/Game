@@ -3,25 +3,6 @@ var PlayerController = require('./PlayerController.js');
 var NetworkController = require('./NetworkController.js');
 var WorldLoader = require('./WorldLoader.js');
 
-// TODO(Jan) decide where to put shims like these:
-// Shim for performance.now()
-// Date.now() may only have a resolution of 15ms on some browsers
-// 60 FPS = intervals of 16.6 ms, window.performance.webkitNow provides 
-// submillisecond precision
-window.performance = window.performance || {};
-performance.now = (function() {
-  var pageStart = new Date().getTime();
-  return performance.now       ||
-         performance.mozNow    ||
-         performance.msNow     ||
-         performance.oNow      ||
-         performance.webkitNow ||
-         function() { return new Date().getTime() - pageStart; };
-})();
-
-
-
-
 // set up canvas
 var canvas = document.querySelector('#viewport');
 var renderer = new THREE.WebGLRenderer({canvas: canvas});
@@ -35,6 +16,27 @@ stats.domElement.style.position = 'absolute';
 stats.domElement.style.top = '0px';
 container.appendChild( stats.domElement );
 
+var socket = io.connect(location.origin);
+
+var getId = function () {
+  var match = /^\/game\/([^\/]*)/.exec(location.pathname);
+  if (match) {
+    return match[1];
+  }
+};
+
+var id = getId();
+if (id !== undefined) {
+  socket.emit('connectgame', id);
+} else {
+  // error
+}
+
+socket.on('initialize', function (config) {
+  var worldLoader = new WorldLoader();
+  console.log(config);
+  worldLoader.load(config.level, onWorldLoaded);
+});
                  
 var onWorldLoaded = function (world) {    
   
@@ -45,7 +47,6 @@ var onWorldLoaded = function (world) {
     position: new THREE.Vector2(0, 0)
   });
   
-  var socket = io.connect(location.origin);
   var playerController = new PlayerController(world, player, socket);
   var networkController = new NetworkController(world, player, socket);
   
@@ -90,16 +91,16 @@ var onWorldLoaded = function (world) {
   var animate = function () {
     stats.begin();
     var delta = getDelta();
-    requestAnimationFrame(animate);
     update(delta);
     world.render(renderer);
     stats.update();
+    
+    requestAnimationFrame(animate);
   };
   
   animate();
 
 };
 
-var worldLoader = new WorldLoader();  
-worldLoader.load("/worlds/testworld.json", onWorldLoaded);
+
 
