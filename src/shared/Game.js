@@ -3,7 +3,7 @@
 // Base class for a game
 var Game = function (cfg) {
   
-  this.players = [];
+  this.players = {};
   
   this.walls = [];
 

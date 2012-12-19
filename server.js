@@ -1,6 +1,6 @@
 var express = require('express');
+var config = require('./src/server/config.js');
 var app = express();
-var port = 8080;
 
 var browserify = require('browserify');
 var bundle = browserify({
@@ -21,20 +21,22 @@ app.configure(function(){
   app.get('/', function(request, response) { 
     response.sendfile('./src/room.html');
   });
-  app.use(express.static(__dirname + '/src/public'));
+  app.use(express.static(__dirname + '/src/server/public'));
   app.use(bundle);
 });
 
-console.log('Static file server running at http://localhost');
+console.log('Static file server running at http://localhost:' + config.port);
 
 
-var server = app.listen(port);
+var server = app.listen(config.port);
 var io = require('socket.io').listen(server);
 io.set('log level', 0);
+
 var gameServer = require('./src/server/gameServer.js');
+var ServerGame = require('./src/server/ServerGame.js');
 gameServer.start(io);
 
 // add a testgame
-gameServer.addGame('test', new gameServer.Game({
-  level: '/worlds/testworld.json'
-}));
+ServerGame.load('/worlds/testworld.json').then(function (game) {
+  gameServer.addGame('test', game);
+});

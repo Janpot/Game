@@ -1,5 +1,5 @@
 var utils = require('../shared/utils.js');
-var Wall = require('./wall.js');
+var Wall = require('./ClientWall.js');
 var World = require('./World.js');
 
 var WorldLoader = module.exports = function() {
