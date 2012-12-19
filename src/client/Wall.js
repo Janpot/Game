@@ -1,4 +1,4 @@
-var utils = require('./shared/utils.js');
+var utils = require('../shared/utils.js');
 
 // Describes a wall in the world, a wall is basically a 2D polygon in the XYplane
 var Wall = module.exports = function (cfg) {

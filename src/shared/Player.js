@@ -1,13 +1,21 @@
 var utils = require('./utils.js');
 var twoD = require('./twoD');
 
-// describes a player in the field
-var Player = module.exports = function (id, cfg) {
-  
+// Describes a player in the field. Provides base methods 
+// for manipulating and rendering Players
+//
+// id: string
+// cfg: {
+//   speed: number
+//   position: twoD.Vector
+//   lookDir: twoD.Vector
+//   boundingRadius: number
+// }
+var Player = function (id, cfg) {  
   this.id = id;
   
   // Player speed
-  this.speed = 12; // m/s  
+  this.speed = cfg.speed || 12; // m/s  
   
   // Current position
   this.position = cfg.position || new twoD.Vector(0, 0);
@@ -16,8 +24,10 @@ var Player = module.exports = function (id, cfg) {
   this.lookDir = cfg.lookDir || new twoD.Vector(1, 0);
   
   // radius for a bounding circle for collision detection
-  this.boundingRadius = 0.5;
+  this.boundingRadius = cfg.boundingRadius || 0.5;
 };
+
+module.exports = Player;
 
 // returns a serializable object representing the state of this player
 Player.prototype.serializeState = function() {

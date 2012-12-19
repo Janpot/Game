@@ -1,5 +1,5 @@
-var Player = require('./shared/Player.js');
-var utils = require('./shared/utils');
+var Player = require('../shared/Player.js');
+var utils = require('../shared/utils');
 
 var ClientPlayer = module.exports = function (id, cfg) {
   Player.call(this, id, cfg);
@@ -20,7 +20,7 @@ var ClientPlayer = module.exports = function (id, cfg) {
   
 };
 
-utils.extend(Player, ClientPlayer);
+ClientPlayer.prototype = Object.create(Player.prototype);
 
 ClientPlayer.prototype.update = function(delta) {
   Player.prototype.update.call(this, delta);

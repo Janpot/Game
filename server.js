@@ -4,7 +4,7 @@ var port = 8080;
 
 var browserify = require('browserify');
 var bundle = browserify({
-  entry: './src/js/client.js',
+  entry: './src/client/client.js',
   mount: '/client.js',
   watch: true,
   debug: true
@@ -21,7 +21,7 @@ app.configure(function(){
   app.get('/', function(request, response) { 
     response.sendfile('./src/room.html');
   });
-  app.use(express.static(__dirname + '/src'));
+  app.use(express.static(__dirname + '/src/public'));
   app.use(bundle);
 });
 
@@ -31,7 +31,7 @@ console.log('Static file server running at http://localhost');
 var server = app.listen(port);
 var io = require('socket.io').listen(server);
 io.set('log level', 0);
-var gameServer = require('./src/js/gameServer.js');
+var gameServer = require('./src/server/gameServer.js');
 gameServer.start(io);
 
 // add a testgame

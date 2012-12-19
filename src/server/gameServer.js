@@ -1,5 +1,5 @@
-var utils = require('./shared/utils.js');
-var Player = require('./shared/Player.js');
+var utils = require('../shared/utils.js');
+var Player = require('../shared/Player.js');
 
 var Game = exports.Game = function (cfg) {
   this.level = cfg.level;
