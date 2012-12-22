@@ -1,15 +1,63 @@
+var Q = require('q');
+var twoD = require('../shared/twoD');
+var Game = require('../shared/Game.js');
+var utils = require('../shared/utils.js');
+var Player = require('../shared/Player.js');
+var ClientWall = require('./ClientWall.js');
 var Bullet = require('./Bullet.js');
 
-// game.World Describes the playingfield
-// This class is responsible for rendering the world and its objects
-// TODO(jan): Ultimately all game logic should be taken out of this class and
-// put in separate controllers. We will combine as much objects as possible in a 
-// global world.objects list and call update(delta) on each element. Each object 
-// wil extend a GameObject interface which exposes an update(delta) method.
-// We will combine: walls, players, floor, bullets,...
-//   depends on: - shader for the hidden parts so we don't need setMode(), etc
-//               - level creation mechanism (Cinema4D plugin)
-var World = module.exports = function () {
+// gets json from this server and parses it. returns a promise.
+// TODO(Jan): Move this to a dedicated library?
+var getJson = function (path) {
+  var deferred = Q.defer();
+  
+  var xhr = new XMLHttpRequest();
+
+  xhr.onreadystatechange = utils.bind(this, function () {
+    if (xhr.readyState === 4) {
+      if (xhr.status === 200 || xhr.status === 0) {
+        var json = JSON.parse(xhr.responseText);
+        deferred.resolve(json);
+      } else {
+        deferred.reject("ClientGame: Couldn't load [" + url + "] [" + xhr.status + "]");
+      }
+    }
+  });
+
+  xhr.open( "GET", path, true );
+  xhr.send( null );
+  
+  return deferred.promise;
+};
+
+var parse = function (cfg) {
+  var deferred = Q.defer();
+  
+  var result = new ClientGame(cfg);
+  
+  for (var i = 0; i < cfg.walls.length; i++) {
+    var wall = new ClientWall({
+      corners: cfg.walls[i].corners.map(function (corner) { 
+          return new twoD.Vector(corner[0], corner[1]);
+        })
+    });
+    
+    result.walls.push(wall);
+  }
+  var sceneLoader = new THREE.SceneLoader();
+  sceneLoader.load(cfg.scene, function(data) {
+    result.environment = data.objects;
+    result.scene = data.scene;
+    result.init();
+    deferred.resolve(result);
+  });
+  
+  return deferred.promise;
+};
+
+var ClientGame;
+module.exports = ClientGame = function (cfg) {
+  Game.call(this, cfg);
   
   this.scene;
   
@@ -18,39 +66,44 @@ var World = module.exports = function () {
   this.camera = new THREE.PerspectiveCamera(45, 1, 0.1, 1000);
   this.camera.position.z = 50;
   
-  this.walls = [];
-  
-  this.players = [];
-  
   this.bullets = [];
-  
 };
 
+ClientGame.prototype = Object.create(Game.prototype);
+
+// Loads a game from the server
+ClientGame.load = function (level) {
+ return getJson(level).then(function (cfg) {
+   return parse(cfg);
+ });
+};
+
+
+
+
 // add a player to the world
-World.prototype.addPlayer = function(player) {
-  this.players.push(player);
+ClientGame.prototype.addPlayer = function(player) {
+  Game.prototype.addPlayer.call(this, player);
   this.scene.add(player.mesh);
 };
 
 // remove a player from the world
-World.prototype.removePlayer = function(player) {
-  for (var i = 0; i < this.players.length; i++) {
-    if (this.players[i] === player) {
-      this.players.splice(i, 1);
-      this.scene.remove(player.mesh);
-    }
+ClientGame.prototype.removePlayer = function(id) {
+  var removedPlayer = Game.prototype.removePlayer.call(this, id);
+  if (removedPlayer !== undefined) {
+    this.scene.remove(removedPlayer.mesh);
   }
 };
 
 // update the players in this world
-World.prototype.updatePlayers = function (delta) {
+ClientGame.prototype.updatePlayers = function (delta) {
   for (var i = 0; i < this.players.length; i++) {
     this.players[i].update(delta);
   }
 };
 
 // set the visibility of the players
-World.prototype.setPlayersVisible = function (visible) {
+ClientGame.prototype.setPlayersVisible = function (visible) {
   for (var i = 0; i < this.players.length; i++) {
     var player = this.players[i];
     player.mesh.visible = visible;
@@ -58,7 +111,7 @@ World.prototype.setPlayersVisible = function (visible) {
 };
 
 // initialize the world
-World.prototype.init = function () {
+ClientGame.prototype.init = function () {
   // init scene
   //this.scene = new THREE.Scene();      
   this.scene.add(this.camera);
@@ -68,9 +121,6 @@ World.prototype.init = function () {
   
   // light for render above the player
   this.playerLight = new THREE.DirectionalLight(0xFFFFFF);
-  
-  // init floor
-  this.scene.add(this.floor);
   
   // init walls
   for (var i = 0; i < this.walls.length; i++) {
@@ -85,7 +135,7 @@ World.prototype.init = function () {
   this.scene.add(this.playerLight);
 };
 
-World.prototype.setViewPosition = function (position) {
+ClientGame.prototype.setViewPosition = function (position) {
   for (var i = 0; i < this.walls.length; i++) {
     this.walls[i].setHidden(position);
   }
@@ -99,7 +149,7 @@ World.prototype.setViewPosition = function (position) {
 
 
 // determines whether a point in 2D space is obscured by a wall in the world
-World.prototype.isVisible = function (position) {
+ClientGame.prototype.isVisible = function (position) {
   for (var i = 0; i < this.walls.length; i++) {
     if (this.walls[i].hides(position)) {
       return false;
@@ -109,19 +159,19 @@ World.prototype.isVisible = function (position) {
 };
 
 // update the world with a timeframe of delta
-World.prototype.update = function (delta) {
+ClientGame.prototype.update = function (delta) {
   this.updatePlayers(delta);
   this.updateBullets(delta);
 };
 
-World.prototype.updateBullets = function (delta) {
+ClientGame.prototype.updateBullets = function (delta) {
   for (var i = 0; i < this.bullets.length; i++) {
     this.bullets[i].update(delta);
   }
 };
 
 // Renders the world with the given renderer
-World.prototype.render = function (renderer) {
+ClientGame.prototype.render = function (renderer) {
   var ctx = renderer.context;
   renderer.clear();
   
@@ -155,26 +205,26 @@ World.prototype.render = function (renderer) {
 };
 
 
-World.prototype.addBullet = function (position, direction) {
+ClientGame.prototype.addBullet = function (position, direction) {
   var bullet = new Bullet(position, direction);
   this.bullets.push(bullet);
   this.scene.add(bullet.mesh);
 };
 
 // Modes for setMode()
-World.prototype.VISIBLE_PARTS = 0;
-World.prototype.OBSCURED_PARTS = 1;
-World.prototype.OBSCURING_MASK = 2;
+ClientGame.prototype.VISIBLE_PARTS = 0;
+ClientGame.prototype.OBSCURED_PARTS = 1;
+ClientGame.prototype.OBSCURING_MASK = 2;
 
 // sets the visibility of the parts of the wall
-World.prototype.setHidingblocksVisible = function (visible) {
+ClientGame.prototype.setHidingblocksVisible = function (visible) {
   for (var i = 0; i < this.walls.length; i++) {
     this.walls[i].setHidingblocksVisible(visible);
   }
 };
 
 // set the visibility of the bullets
-World.prototype.setBulletsVisible = function (visible) {
+ClientGame.prototype.setBulletsVisible = function (visible) {
   for (var i = 0; i < this.bullets.length; i++) {
     var bullet = this.bullets[i];
     bullet.mesh.visible = visible;
@@ -182,13 +232,13 @@ World.prototype.setBulletsVisible = function (visible) {
 };
 
 // set the visibility of the bullets
-World.prototype.setEnvironmentVisible = function (visible) {
+ClientGame.prototype.setEnvironmentVisible = function (visible) {
   for (var objectid in this.environment) {
     this.environment[objectid].visible = visible;
   }
 };
 
-World.prototype.setMode = function (mode) {  
+ClientGame.prototype.setMode = function (mode) {  
   switch (mode) {
     case this.VISIBLE_PARTS:
       this.setEnvironmentVisible(true);

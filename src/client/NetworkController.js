@@ -20,7 +20,7 @@ var NetworkController = module.exports = function (world, player, socket) {
 // add a player to the game
 NetworkController.prototype.addPlayer = function (remote) {
   console.log('adding ' + remote.id);
-  var enemy = new ClientPlayer(remote.id, {
+  var enemy = new ClientPlayer(remote.id, this.world, {
     color: 0x0000FF
   });        
   enemy.unserializeState(remote.state);
@@ -31,14 +31,14 @@ NetworkController.prototype.addPlayer = function (remote) {
   var now = window.performance.now();
   this.stateBuffers[remote.id] = new PlayerstateBuffer();
   this.stateBuffers[remote.id].add(now + remote.delta, remote.state);
-  world.addPlayer(enemy);
+  this.world.addPlayer(enemy);
 };
 
 // remove a player from the game
 NetworkController.prototype.removePlayer = function (id) {
   console.log('removing ' + id);
   var enemy = this.enemies[id]
-  this.world.removePlayer(enemy);
+  this.world.removePlayer(id);
   delete this.stateBuffers[id];
   delete this.enemies[id];
 };

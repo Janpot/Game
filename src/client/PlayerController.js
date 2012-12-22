@@ -1,5 +1,5 @@
-var dynamics = require('../shared/dynamics.js');
 var utils = require('../shared/utils.js');
+var twoD = require('../shared/twoD');
 
 // controls for a player
 var PlayerController = module.exports = function (world, player, socket) {
@@ -10,15 +10,15 @@ var PlayerController = module.exports = function (world, player, socket) {
   this.player = player;
   this.socket = socket;
   this.world = world;
-  world.addPlayer(player);
+  this.world.addPlayer(player);
   
   // movement
   this.upPressed = false;
   this.downPressed = false;
   this.leftPressed = false;
   this.rightPressed = false;
-  this.arrowDirection = new THREE.Vector2(0, 0);
-  this.mousePos = new THREE.Vector2(1, 0);
+  this.arrowDirection = new twoD.Vector(0, 0);
+  this.mousePos = new twoD.Vector(1, 0);
   this.leftMouseBtn = false;
   this.rightMouseBtn = false;
   
@@ -76,6 +76,15 @@ var PlayerController = module.exports = function (world, player, socket) {
     }
   };
   
+  // Reset when the window loses focus
+  var blur = function (e) {
+    this.upPressed = false;
+    this.downPressed = false;        
+    this.leftPressed = false;
+    this.rightPressed = false;
+    this.arrowDirection.set(0, 0);
+  };
+  
   
   var mouseMove = function (e) {
     // convert mouse coordinates to [-1, 1] range
@@ -114,7 +123,8 @@ var PlayerController = module.exports = function (world, player, socket) {
   };
   
   window.addEventListener('keyup', utils.bind(this, keyUp), false);
-  window.addEventListener('keydown', utils.bind(this, keyDown), false);  
+  window.addEventListener('keydown', utils.bind(this, keyDown), false);
+  window.addEventListener('blur', utils.bind(this, blur), false);
   window.addEventListener('mousemove', utils.bind(this, mouseMove), false);
   window.addEventListener('mousedown', utils.bind(this, mouseDown), false);
   window.addEventListener('mouseup', utils.bind(this, mouseUp), false);
@@ -122,7 +132,6 @@ var PlayerController = module.exports = function (world, player, socket) {
   
   console.log('this is ' + this.player.id);
   this.startSendingState();
-  
 };
 
 // Set the proper size of this object to calculate the mouseposition
@@ -134,12 +143,8 @@ PlayerController.prototype.setSize = function (width, height) {
 // update the world state according to the controls
 PlayerController.prototype.update = function (delta) {
   // update position
-  distance = this.player.speed * delta;
-  var track = new THREE.Vector2().copy(this.arrowDirection)
-                                 .normalize()
-                                 .multiplyScalar(distance);
-  
-  this.moveAndCollide(track);    
+  this.player.walkDir.copy(this.arrowDirection);
+  this.player.updatePosition(delta);    
   
   // find the world coordinates
   // pickingray mutates vector so clone()
@@ -150,40 +155,6 @@ PlayerController.prototype.update = function (delta) {
                      .normalize(); 
   
   this.world.setViewPosition(this.player.position);
-};
-
-// Move the player along track, colide if necessary
-PlayerController.prototype.moveAndCollide = function (track) {
-  var altTrack = new THREE.Vector2();
-  // test primary track
-  var s = dynamics.collideCircleWorld(
-    this.player.position, this.player.boundingRadius, 
-    track, 
-    this.world,
-    altTrack
-  );
-  
-  // move player
-  if (s === undefined) {
-    this.player.position.addSelf(track);
-  } else {
-    // cut player path
-    this.player.position.addSelf(track.multiplyScalar(s))
-      
-    // player collided, test alternative track
-    s = dynamics.collideCircleWorld(
-      this.player.position, this.player.boundingRadius, 
-      altTrack, 
-      this.world
-    );
-    
-    // move player over alternative track
-    if (s === undefined) {
-      this.player.position.addSelf(altTrack);
-    } else {
-      this.player.position.addSelf(altTrack.multiplyScalar(s))
-    }
-  } 
 };
 
 // let the player shoot

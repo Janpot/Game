@@ -1,5 +1,6 @@
 var utils = require('./utils.js');
 var twoD = require('./twoD');
+var dynamics = require('./dynamics');
 
 // Describes a player in the field. Provides base methods 
 // for manipulating and rendering Players
@@ -11,14 +12,19 @@ var twoD = require('./twoD');
 //   lookDir: twoD.Vector
 //   boundingRadius: number
 // }
-var Player = function (id, cfg) {  
+var Player = function (id, world, cfg) {  
   this.id = id;
+  
+  this.world = world;
   
   // Player speed
   this.speed = cfg.speed || 12; // m/s  
   
   // Current position
   this.position = cfg.position || new twoD.Vector(0, 0);
+  
+  // Direction the player is walking
+  this.walkDir = cfg.walkDir || new twoD.Vector(0, 0);
   
   // Direction the player is looking at (normalized)
   this.lookDir = cfg.lookDir || new twoD.Vector(1, 0);
@@ -59,3 +65,59 @@ Player.prototype.applyInput = function (input) {
 Player.prototype.update = function (delta) {
   
 };
+
+// Update player position according to his walking direction
+Player.prototype.updatePosition = function (delta) {
+  distance = this.speed * delta;
+  var track = this.walkDir.clone()
+                          .normalize()
+                          .multiplyScalar(distance);
+  
+  this.moveAndCollide(track);  
+};
+
+// Move the player along track, colide if necessary
+Player.prototype.moveAndCollide = function (track) {
+  var altTrack = new twoD.Vector();
+  // test primary track
+  var s = dynamics.collideCircleWorld(
+    this.position, this.boundingRadius, 
+    track, 
+    this.world,
+    altTrack
+  );
+  
+  // move player
+  if (s === undefined) {
+    this.position.addSelf(track);
+  } else {
+    // cut player path
+    this.position.addSelf(track.multiplyScalar(s))
+      
+    // player collided, test alternative track
+    s = dynamics.collideCircleWorld(
+      this.position, this.boundingRadius, 
+      altTrack, 
+      this.world
+    );
+    
+    // move player over alternative track
+    if (s === undefined) {
+      this.position.addSelf(altTrack);
+    } else {
+      this.position.addSelf(altTrack.multiplyScalar(s))
+    }
+  } 
+};
+
+
+
+
+
+
+
+
+
+
+
+

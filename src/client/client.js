@@ -1,8 +1,8 @@
 //var Player = require('./Player.js');
 var PlayerController = require('./PlayerController.js');
 var NetworkController = require('./NetworkController.js');
-var WorldLoader = require('./WorldLoader.js');
 var ClientPlayer = require('./ClientPlayer.js');
+var ClientGame = require('./ClientGame.js');
 
 // set up canvas
 var canvas = document.querySelector('#viewport');
@@ -30,25 +30,28 @@ var id = getId();
 if (id !== undefined) {
   socket.emit('connectgame', id);
 } else {
-  // error
+  console.log('Error connecting');
 }
 
 socket.on('initialize', function (config) {
-  var worldLoader = new WorldLoader();
-  worldLoader.load(config.level, onWorldLoaded);
+  ClientGame.load(config.level)
+      .then(onGameLoaded)
+      .fail(function (err) {
+        console.error(err);
+      });
 });
                  
-var onWorldLoaded = function (world) {    
+var onGameLoaded = function (game) {    
   
   // for debugging purposes
-  window.world = world;
+  window.world = game;
   
-  var player = new ClientPlayer(socket.socket.sessionid, {
+  var player = new ClientPlayer(socket.socket.sessionid, game, {
     position: new THREE.Vector2(0, 0)
   });
   
-  var playerController = new PlayerController(world, player, socket);
-  var networkController = new NetworkController(world, player, socket);
+  var playerController = new PlayerController(game, player, socket);
+  var networkController = new NetworkController(game, player, socket);
   
   var initViewport = (function() {  
     // variables to store previous state
@@ -62,8 +65,8 @@ var onWorldLoaded = function (world) {
         var aspect = viewport.width / viewport.height;
         renderer.setSize(width, height);
         playerController.setSize(width, height);
-        world.camera.aspect = width / height;
-        world.camera.updateProjectionMatrix();
+        game.camera.aspect = width / height;
+        game.camera.updateProjectionMatrix();
         prevWidth = width;
         prevHeight = height;
       }    
@@ -85,21 +88,21 @@ var onWorldLoaded = function (world) {
     initViewport();
     networkController.update(delta);
     playerController.update(delta);
-    world.update(delta);
+    game.update(delta);
   };
   
   var animate = function () {
     stats.begin();
     var delta = getDelta();
     update(delta);
-    world.render(renderer);
+    game.render(renderer);
     stats.update();
     
     requestAnimationFrame(animate);
   };
   
   animate();
-
+  
 };
 
 

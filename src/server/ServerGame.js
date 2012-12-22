@@ -73,12 +73,12 @@ ServerGame.prototype.connectClient = function (socket) {
   socket.emit('initialize', this.serializeState());
   
   socket.on('playerstate', utils.bind(this, function (remote) {
-    var player = this.players[socket.id];
+    var player = this.getPlayer(socket.id);
     if (player === undefined) {
       // first update
-      player = new Player(socket.id, { });
+      player = new Player(socket.id, this, { });
       player.socket = socket;
-      this.players[socket.id] = player;
+      this.addPlayer(player);
     }
     
     player.unserializeState(remote);     
@@ -87,9 +87,7 @@ ServerGame.prototype.connectClient = function (socket) {
   
   socket.on('disconnect', utils.bind(this, function () {
     // the client has left
-    if (this.players[socket.id]) {
-      delete this.players[socket.id];
-    }
+    this.removePlayer(socket.id);
   }));
   
 };
@@ -98,8 +96,10 @@ ServerGame.prototype.startUpdatingClients = function () {
   setInterval(utils.bind(this, function () {
     // update the clients
     var gameState = this.serializeState();
-    for (var playerid in this.players) {
-      this.players[playerid].socket.emit('gamestate', gameState);
+    
+    for (var i = 0; i < this.players.length; i++) {
+      var player = this.players[i];
+      player.socket.emit('gamestate', gameState);
     }
   }), 50);
 };
@@ -133,10 +133,10 @@ ServerGame.prototype.startUpdatingClients = function () {
 ServerGame.prototype.serializeState = function () {  
   var players = {};
   var now = Date.now();
-  for (var playerid in this.players) {
-    var player = this.players[playerid];
-    players[playerid] = {
-      id: playerid,
+  for (var i = 0; i < this.players.length; i++) {
+    var player = this.players[i];
+    players[player.id] = {
+      id: player.id,
       delta: player.lastUpdate - now,
       state: player.serializeState()
     }

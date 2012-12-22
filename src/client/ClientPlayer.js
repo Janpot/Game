@@ -1,8 +1,8 @@
 var Player = require('../shared/Player.js');
 var utils = require('../shared/utils');
 
-var ClientPlayer = module.exports = function (id, cfg) {
-  Player.call(this, id, cfg);
+var ClientPlayer = module.exports = function (id, world, cfg) {
+  Player.call(this, id, world, cfg);
   
   if (cfg.color === undefined) {
     cfg.color = 0xCC0000;
@@ -31,3 +31,5 @@ ClientPlayer.prototype.update = function(delta) {
   this.mesh.position.set(this.position.x, this.position.y, 0.5);
   this.mesh.rotation.set(0, 0, angle);  
 };
+
+
