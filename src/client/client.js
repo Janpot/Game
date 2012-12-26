@@ -37,7 +37,7 @@ socket.on('initialize', function (config) {
   ClientGame.load(config.level)
       .then(onGameLoaded)
       .fail(function (err) {
-        console.error(err);
+        console.error(err.stack);
       });
 });
                  
@@ -64,9 +64,7 @@ var onGameLoaded = function (game) {
         // only resize when size actually changes
         var aspect = viewport.width / viewport.height;
         renderer.setSize(width, height);
-        playerController.setSize(width, height);
-        game.camera.aspect = width / height;
-        game.camera.updateProjectionMatrix();
+        game.setSize(width, height);
         prevWidth = width;
         prevHeight = height;
       }    
