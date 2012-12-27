@@ -1,8 +1,5 @@
-//var Player = require('./Player.js');
-var PlayerController = require('./PlayerController.js');
-var NetworkController = require('./NetworkController.js');
-var ClientPlayer = require('./ClientPlayer.js');
 var ClientGame = require('./ClientGame.js');
+var ClientGameController = require('./ClientGameController.js');
 
 // set up canvas
 var canvas = document.querySelector('#viewport');
@@ -44,14 +41,9 @@ socket.on('initialize', function (config) {
 var onGameLoaded = function (game) {    
   
   // for debugging purposes
-  window.world = game;
+  // window.world = game;
   
-  var player = new ClientPlayer(socket.socket.sessionid, game, {
-    position: new THREE.Vector2(0, 0)
-  });
-  
-  var playerController = new PlayerController(game, player, socket);
-  var networkController = new NetworkController(game, player, socket);
+  var controller = new ClientGameController(game, socket);
   
   var initViewport = (function() {  
     // variables to store previous state
@@ -62,9 +54,10 @@ var onGameLoaded = function (game) {
       var height = document.body.clientHeight;
       if (width != prevWidth || height != prevHeight) {
         // only resize when size actually changes
-        var aspect = viewport.width / viewport.height;
         renderer.setSize(width, height);
         game.setSize(width, height);
+        controller.setSize(width, height);
+        
         prevWidth = width;
         prevHeight = height;
       }    
@@ -84,8 +77,7 @@ var onGameLoaded = function (game) {
   
   var update = function (delta) {
     initViewport();
-    networkController.update(delta);
-    playerController.update(delta);
+    controller.update(delta);
     game.update(delta);
   };
   

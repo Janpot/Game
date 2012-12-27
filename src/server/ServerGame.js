@@ -53,8 +53,6 @@ module.exports = ServerGame = function (level, cfg) {
   
     this.walls.push(wall);
   }
-  
-  this.startUpdatingClients();
 };
 
 ServerGame.prototype = Object.create(Game.prototype);
@@ -66,42 +64,6 @@ ServerGame.load = function (level) {
    
    return new ServerGame(level, cfg);
  });
-};
-
-ServerGame.prototype.connectClient = function (socket) {
-  
-  socket.emit('initialize', this.serializeState());
-  
-  socket.on('playerstate', utils.bind(this, function (remote) {
-    var player = this.getPlayer(socket.id);
-    if (player === undefined) {
-      // first update
-      player = new Player(socket.id, this, { });
-      player.socket = socket;
-      this.addPlayer(player);
-    }
-    
-    player.unserializeState(remote);     
-    player.lastUpdate = Date.now();
-  }));
-  
-  socket.on('disconnect', utils.bind(this, function () {
-    // the client has left
-    this.removePlayer(socket.id);
-  }));
-  
-};
-
-ServerGame.prototype.startUpdatingClients = function () {
-  setInterval(utils.bind(this, function () {
-    // update the clients
-    var gameState = this.serializeState();
-    
-    for (var i = 0; i < this.players.length; i++) {
-      var player = this.players[i];
-      player.socket.emit('gamestate', gameState);
-    }
-  }), 50);
 };
 
 

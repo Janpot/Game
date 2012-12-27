@@ -5,7 +5,6 @@ var utils = require('../shared/utils.js');
 var Player = require('../shared/Player.js');
 var ClientWall = require('./ClientWall.js');
 var Bullet = require('./Bullet.js');
-var Controls = require('./Controls.js');
 
 // gets json from this server and parses it. returns a promise.
 // TODO(Jan): Move this to a dedicated library?
@@ -68,8 +67,6 @@ module.exports = ClientGame = function (cfg) {
   this.camera.position.z = 50;
   
   this.bullets = [];
-  
-  this.controls = new Controls(this.camera);
 };
 
 ClientGame.prototype = Object.create(Game.prototype);
@@ -83,11 +80,10 @@ ClientGame.load = function (level) {
 
 
 
-// add a player to the world
+// set size of the viewport
 ClientGame.prototype.setSize = function(width, height) {
   this.camera.aspect = width / height;
   this.camera.updateProjectionMatrix();
-  this.controls.setSize(width, height);
 };
 
 
@@ -172,10 +168,6 @@ ClientGame.prototype.isVisible = function (position) {
 ClientGame.prototype.update = function (delta) {
   this.updatePlayers(delta);
   this.updateBullets(delta);
-  
-  // test controls
-  var input = this.controls.getInput();
-  //console.log(input.mouse);
 };
 
 ClientGame.prototype.updateBullets = function (delta) {
