@@ -112,7 +112,14 @@ Player.prototype.moveAndCollide = function (track) {
 
 
 
-
+// Apply an input object from the Controls to this player
+Player.prototype.applyInput = function (input) {
+  this.walkDir.copy(input.arrows);
+  
+  this.lookDir.copy(input.mouse)
+              .subSelf(this.position)
+              .normalize(); 
+};
 
 
 

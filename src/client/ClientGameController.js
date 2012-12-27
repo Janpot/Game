@@ -42,16 +42,11 @@ module.exports = ClientGameController = function (clientGame, clientSocket) {
 // update the game state according to the controls
 ClientGameController.prototype.update = function (delta) {
   
-  var input = this.controls.getInput();
-  
+  var input = this.controls.getInput();  
+  this.player.applyInput(input);
   
   // update position
-  this.player.walkDir.copy(input.arrows);
   this.player.updatePosition(delta); 
-  
-  this.player.lookDir.copy(input.mouse)
-                     .subSelf(this.player.position)
-                     .normalize(); 
   
   this.game.setViewPosition(this.player.position);
   
