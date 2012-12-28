@@ -39,11 +39,11 @@ utils.intersectXYPlane = function (ray) {
 };
 
 utils.midPoint = function (P1, P2) {
-  return new THREE.Vector2().sub(P2, P1).multiplyScalar(0.5).addSelf(P1);
+  return new twoD.Vector().sub(P2, P1).multiplyScalar(0.5).addSelf(P1);
 };
 
 utils.perpendicular = function (v) {
-  return new THREE.Vector2(-v.y, v.x);
+  return new twoD.Vector(-v.y, v.x);
 };
 
 utils.angleSignBetween = function (v1, v2) {
@@ -59,3 +59,8 @@ utils.angleSignBetween = function (v1, v2) {
 utils.interpolate = function(a, b, fraction) {
   return (a + (b - a) * fraction);
 };
+
+
+
+
+

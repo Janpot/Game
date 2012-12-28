@@ -16,8 +16,12 @@ var getJson = function (path) {
   xhr.onreadystatechange = utils.bind(this, function () {
     if (xhr.readyState === 4) {
       if (xhr.status === 200 || xhr.status === 0) {
-        var json = JSON.parse(xhr.responseText);
-        deferred.resolve(json);
+        try {
+          var json = JSON.parse(xhr.responseText);
+          deferred.resolve(json);
+        } catch (err) {
+          deferred.reject(err);
+        }
       } else {
         deferred.reject("ClientGame: Couldn't load [" + url + "] [" + xhr.status + "]");
       }

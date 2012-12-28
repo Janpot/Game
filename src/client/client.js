@@ -1,5 +1,6 @@
 var ClientGame = require('./ClientGame.js');
-var ClientGameController = require('./ClientGameController.js');
+var ClientPlayerController = require('./ClientPlayerController.js');
+var EnemiesController = require('./EnemiesController.js');
 
 // set up canvas
 var canvas = document.querySelector('#viewport');
@@ -43,7 +44,8 @@ var onGameLoaded = function (game) {
   // for debugging purposes
   // window.world = game;
   
-  var controller = new ClientGameController(game, socket);
+  var controller = new ClientPlayerController(game, socket);
+  var enemiesController = new EnemiesController(game, socket);
   
   var initViewport = (function() {  
     // variables to store previous state
@@ -78,6 +80,7 @@ var onGameLoaded = function (game) {
   var update = function (delta) {
     initViewport();
     controller.update(delta);
+    enemiesController.update(delta);
     game.update(delta);
   };
   

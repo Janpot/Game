@@ -1,4 +1,4 @@
-var ServerGameController = require('./ServerGameController.js');
+var ServerPlayerController = require('./ServerPlayerController.js');
 
 var games = {};
 var controllers = {};
@@ -8,7 +8,7 @@ var connectPlayer = function (socket) {
     // player connects to a game
     var game = games[id];
     if (game !== undefined) {
-      controllers[socket.id] = new ServerGameController(game, socket);
+      controllers[socket.id] = new ServerPlayerController(game, socket);
     }
   });
   
