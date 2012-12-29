@@ -11,17 +11,28 @@
         left: 0px;
         top: 0px;
         background-color: #222;
+        overflow: hidden;
+        font-family: Helvetica, Arial, sans-serif;
       }
       
-      .loading {
-        display: block;
-        margin: 100px auto;
+      #loadingIndicator {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 800px;
+        height: 100px;        
+        margin: -50px -400px;
+        color: white;
+        text-align: center;
       }
     </style>    
   </head>
   <body>
     <div id="viewport"></div>
-    <img class="loading" src="/images/loading.gif"/>
+    <div id="loadingIndicator">
+      <img src="/images/loading.gif"/>
+      <p id="loading-message">loading...</p>
+    </div>
     <script type="text/javascript" src="/socket.io/socket.io.js"></script>
     <script type="text/javascript" src="/lib/polyfills.js"></script>
     <script type="text/javascript" src="/lib/stats.min.js"></script>

@@ -1,7 +1,25 @@
 var ClientGame = require('./ClientGame.js');
 
 var viewport = document.getElementById('viewport');
-viewport.style.display = 'none';
+var loadingIndicator = document.getElementById('loadingIndicator');
+var loadingMessage = document.getElementById('loading-message');
+
+var beginLoading = function () {
+  viewport.style.display = 'none';
+  loadingIndicator.style.display = 'block';
+};
+
+var endLoading = function () {
+  viewport.style.display = 'block';
+  loadingIndicator.style.display = 'none';
+};
+
+var setLoadingMessage = function (msg) {
+  loadingMessage.innerText = msg;
+};
+
+setLoadingMessage('Contacting server...');
+beginLoading();
 
 var socket = io.connect(location.origin);
 
@@ -14,24 +32,28 @@ var getId = function () {
 
 var id = getId();
 if (id !== undefined) {
+  setLoadingMessage('Connecting to game...');
   socket.emit('connectgame', id);
 } else {
-  console.log('Error connecting');
+  setLoadingMessage('ERROR: Invalid game id');
 }
 
 socket.on('initialize', function (config) {
+  setLoadingMessage('Loading level...');
+
   ClientGame.load(config.level)
-      .then(onGameLoaded)
-      .fail(function (err) {
-        console.error(err.stack);
-      });
+    .then(onGameLoaded)
+    .fail(function (err) {
+      setLoadingMessage('ERROR: Error while loading the game');
+      console.error(err.stack);
+    });
 });
-                 
+            
 var onGameLoaded = function (game) {    
   
   // for debugging purposes
   // window.world = game;
-  viewport.style.display = 'block';
+  endLoading();
   game.start(viewport, socket);
   
 };
