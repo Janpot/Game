@@ -2,7 +2,6 @@ var Q = require('q');
 var twoD = require('../shared/twoD');
 var Game = require('../shared/Game.js');
 var utils = require('../shared/utils.js');
-var Player = require('../shared/Player.js');
 var ClientWall = require('./ClientWall.js');
 var Bullet = require('./Bullet.js');
 var ClientPlayerController = require('./ClientPlayerController.js');
@@ -38,10 +37,16 @@ ClientGame.prototype = Object.create(Game.prototype);
 // start the game in the provided dom element
 ClientGame.prototype.start = function(domElement, socket) {
   this.domElement = domElement;
+  
+  // make focusable
   this.domElement.tabIndex = 0;
   this.domElement.focus();
-  this.socket = socket;
   
+  // add a cursor
+  this.domElement.style.cursor = 'crosshair';
+  this.domElement.style.webkitUserSelect = 'none';
+      
+  this.socket = socket;  
   
   // initialize the renderer
   var canvas = document.createElement('canvas');

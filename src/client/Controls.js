@@ -148,6 +148,7 @@ Controls.prototype.getInput = function () {
     mouse: {
       x: target.x,
       y: target.y
-    }
+    },
+    leftMouse: this.leftMouseBtn
   };
 };

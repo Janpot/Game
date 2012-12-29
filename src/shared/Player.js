@@ -1,7 +1,8 @@
-var utils = require('./utils.js');
+var utils = require('./utils');
 var twoD = require('./twoD');
 var dynamics = require('./dynamics');
-var PlayerstateBuffer = require('../shared/PlayerstateBuffer.js');
+var Gun = require('./Gun');
+var PlayerstateBuffer = require('../shared/PlayerstateBuffer');
 
 // Describes a player in the field. Provides base methods 
 // for manipulating and rendering Players
@@ -48,6 +49,8 @@ var Player = function (id, world, cfg) {
   if (cfg.buffersize) {
     this.stateBuffer = new PlayerstateBuffer(cfg.buffersize);
   }
+  
+  this.gun = new Gun();
 };
 
 module.exports = Player;
@@ -77,10 +80,6 @@ Player.prototype.unserializeState = function(state) {
 Player.prototype.setBufferedState = function(time) {
   var state = this.stateBuffer.get(time);      
   this.unserializeState(state);  
-};
-
-Player.prototype.applyInput = function (input) {
-  
 };
 
 // Update player state with a timeframe of delta
@@ -143,6 +142,8 @@ Player.prototype.applyInput = function (input, delta) {
               .normalize();
               
   this.updatePosition(delta);
+  
+  this.gun.update(input.leftMouse);
 };
 
 

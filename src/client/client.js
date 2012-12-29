@@ -53,6 +53,7 @@ var onGameLoaded = function (game) {
   
   // for debugging purposes
   // window.world = game;
+  
   endLoading();
   game.start(viewport, socket);
   

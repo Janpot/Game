@@ -30,19 +30,6 @@ module.exports = ClientPlayerController = function (clientGame, clientSocket) {
   this.socket.on('gamestate', utils.bind(this, this.handleCorrections)); 
   
   setInterval(utils.bind(this, this.sendInputBuffer), UPDATE_INTERVAL);
-  
-  console.log('this is ' + this.player.id);
-  
-  // TODO(Jan): Remove this when shooting is properly implemented
-  var mouseDown = function (e) {
-    switch (e.button) {
-      case 0: // left
-        this.shoot();
-        break;
-    }
-  };
-  window.addEventListener('mousedown', utils.bind(this, mouseDown), false);
-  // END TODO  
 };
 
 ClientPlayerController.prototype = Object.create(GameController.prototype);
@@ -53,6 +40,10 @@ ClientPlayerController.prototype.update = function (delta) {
   var input = this.controls.getInput();  
   this.player.applyInput(input, delta);
   
+  if (this.player.gun.shot) {
+    this.game.addBullet(this.player.position.clone(), this.player.lookDir.clone());
+  }
+  
   this.game.setViewPosition(this.player.position);
   
   this.inputBuffer.push({
@@ -60,11 +51,6 @@ ClientPlayerController.prototype.update = function (delta) {
     delta: delta
   });
   
-};
-
-// let the player shoot
-ClientPlayerController.prototype.shoot = function () {
-  this.game.addBullet(this.player.position.clone(), this.player.lookDir.clone());
 };
    
 
