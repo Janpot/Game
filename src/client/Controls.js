@@ -4,7 +4,7 @@ var twoD = require('../shared/twoD');
 
 // controls for a player
 var Controls;
-module.exports = Controls = function (camera) {
+module.exports = Controls = function (game) {
   
   this.width = 0;
   this.height = 0;
@@ -19,7 +19,7 @@ module.exports = Controls = function (camera) {
   this.leftMouseBtn = false;
   this.rightMouseBtn = false;
   
-  this.camera = camera;
+  this.camera = game.camera;
   this._projector = new THREE.Projector();
   
   var keyDown = function (e) {
@@ -80,6 +80,7 @@ module.exports = Controls = function (camera) {
     this.downPressed = false;        
     this.leftPressed = false;
     this.rightPressed = false;
+    this.arrowDirection.set(0, 0);
   };
   
   
@@ -119,13 +120,13 @@ module.exports = Controls = function (camera) {
     e.preventDefault();
   };
   
-  window.addEventListener('keyup', utils.bind(this, keyUp), false);
-  window.addEventListener('keydown', utils.bind(this, keyDown), false);
-  window.addEventListener('blur', utils.bind(this, blur), false);
-  window.addEventListener('mousemove', utils.bind(this, mouseMove), false);
-  window.addEventListener('mousedown', utils.bind(this, mouseDown), false);
-  window.addEventListener('mouseup', utils.bind(this, mouseUp), false);
-  window.addEventListener('contextmenu', utils.bind(this, onContextMenu), false);
+  game.domElement.addEventListener('keyup', utils.bind(this, keyUp), false);
+  game.domElement.addEventListener('keydown', utils.bind(this, keyDown), false);
+  game.domElement.addEventListener('blur', utils.bind(this, blur), false);
+  game.domElement.addEventListener('mousemove', utils.bind(this, mouseMove), false);
+  game.domElement.addEventListener('mousedown', utils.bind(this, mouseDown), false);
+  game.domElement.addEventListener('mouseup', utils.bind(this, mouseUp), false);
+  game.domElement.addEventListener('contextmenu', utils.bind(this, onContextMenu), false);
 };
 
 // Set the proper size of this object to calculate the mouseposition

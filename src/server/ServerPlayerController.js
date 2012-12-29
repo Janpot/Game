@@ -74,8 +74,7 @@ ServerPlayerController.prototype.destroy = function () {
 ServerPlayerController.prototype.handlePlayerinput = function (data) {
   for (var i = 0; i < data.buffer.length; i++) {
     var input = data.buffer[i];
-    this.player.applyInput(input);
-    this.player.updatePosition(PHYSICS_DELTA / 1000);
+    this.player.applyInput(input, PHYSICS_DELTA / 1000);
   }
   this.player.lastClientUpdate = data.clientTime;
   this.player.lastServerUpdate = Date.now();

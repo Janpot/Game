@@ -21,7 +21,7 @@ module.exports = ClientPlayerController = function (clientGame, clientSocket) {
     position: new THREE.Vector2(0, 0)
   });
   this.game.addPlayer(this.player);
-  this.controls = new Controls(this.game.camera);
+  this.controls = new Controls(this.game);
   
   this.inputBuffer = [];
   this.pendingUpdates = [];
@@ -51,10 +51,7 @@ ClientPlayerController.prototype = Object.create(GameController.prototype);
 ClientPlayerController.prototype.update = function (delta) {
   
   var input = this.controls.getInput();  
-  this.player.applyInput(input);
-  
-  // update position
-  this.player.updatePosition(delta); 
+  this.player.applyInput(input, delta);
   
   this.game.setViewPosition(this.player.position);
   
@@ -109,7 +106,6 @@ ClientPlayerController.prototype.getServerUpdate = function(time) {
       return update;
     }
   };
-  //console.log(this.lastCorrectionTime, time, this.pendingUpdates);
 };
   
   
@@ -145,16 +141,14 @@ ClientPlayerController.prototype.handleCorrections = function(serverGame) {
       var update = this.pendingUpdates[i];
       for (var j = 0; j < update.sentInput.length; j++) {
         var inputData = update.sentInput[j];
-        this.player.applyInput(inputData.input);
-        this.player.updatePosition(inputData.delta);
+        this.player.applyInput(inputData.input, inputData.delta);
       }
     }
     
     // apply current inputbuffer
     for (var i = 0; i < this.inputBuffer.length; i++) {
       var inputData = this.inputBuffer[i];
-      this.player.applyInput(inputData.input);
-      this.player.updatePosition(inputData.delta);
+      this.player.applyInput(inputData.input, inputData.delta);
     }
     
   }

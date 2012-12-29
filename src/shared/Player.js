@@ -1,18 +1,24 @@
 var utils = require('./utils.js');
 var twoD = require('./twoD');
 var dynamics = require('./dynamics');
+var PlayerstateBuffer = require('../shared/PlayerstateBuffer.js');
 
 // Describes a player in the field. Provides base methods 
 // for manipulating and rendering Players
 //
 // id: string
 // cfg: {
-//   speed: number
-//   position: twoD.Vector
-//   lookDir: twoD.Vector
+//   speed: number,
+//   state: {
+//     position: twoD.Vector,
+//     lookDir: twoD.Vector
+//   },
 //   boundingRadius: number
 // }
 var Player = function (id, world, cfg) {  
+  var cfg = cfg || {};
+  cfg.state = cfg.state || {};
+  
   this.id = id;
   
   this.world = world;
@@ -21,16 +27,27 @@ var Player = function (id, world, cfg) {
   this.speed = cfg.speed || 12; // m/s  
   
   // Current position
-  this.position = cfg.position || new twoD.Vector(0, 0);
+  this.position = new twoD.Vector(0, 0);
+  if (cfg.state.position) {
+    this.position.copy(cfg.state.position)
+  }
   
   // Direction the player is walking
-  this.walkDir = cfg.walkDir || new twoD.Vector(0, 0);
+  this.walkDir = new twoD.Vector(0, 0);
   
   // Direction the player is looking at (normalized)
-  this.lookDir = cfg.lookDir || new twoD.Vector(1, 0);
+  this.lookDir = new twoD.Vector(1, 0);
+  if (cfg.state.lookDir) {
+    this.lookDir.copy(cfg.state.lookDir)
+  }
   
   // radius for a bounding circle for collision detection
   this.boundingRadius = cfg.boundingRadius || 0.5;
+  
+  // buffer can that store past states
+  if (cfg.buffersize) {
+    this.stateBuffer = new PlayerstateBuffer(cfg.buffersize);
+  }
 };
 
 module.exports = Player;
@@ -56,6 +73,11 @@ Player.prototype.unserializeState = function(state) {
   this.lookDir.copy(state.lookDir);
 };
 
+// Sets the player to a state in the buffer at [time]
+Player.prototype.setBufferedState = function(time) {
+  var state = this.stateBuffer.get(time);      
+  this.unserializeState(state);  
+};
 
 Player.prototype.applyInput = function (input) {
   
@@ -113,12 +135,14 @@ Player.prototype.moveAndCollide = function (track) {
 
 
 // Apply an input object from the Controls to this player
-Player.prototype.applyInput = function (input) {
+Player.prototype.applyInput = function (input, delta) {
   this.walkDir.copy(input.arrows);
   
   this.lookDir.copy(input.mouse)
               .subSelf(this.position)
-              .normalize(); 
+              .normalize();
+              
+  this.updatePosition(delta);
 };
 
 
