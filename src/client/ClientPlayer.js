@@ -1,8 +1,8 @@
 var Player = require('../shared/Player.js');
 var utils = require('../shared/utils');
 
-var ClientPlayer = module.exports = function (id, world, cfg) {
-  Player.call(this, id, world, cfg);
+var ClientPlayer = module.exports = function (id, factory, cfg) {
+  Player.call(this, id, factory, cfg);
   
   if (cfg.color === undefined) {
     cfg.color = 0xCC0000;
@@ -22,6 +22,12 @@ var ClientPlayer = module.exports = function (id, world, cfg) {
 
 ClientPlayer.prototype = Object.create(Player.prototype);
 
+ClientPlayer.prototype.initialize = function(game) {
+  Player.prototype.initialize.call(this, game);
+  
+  this.game.scene.add(this.mesh);
+};
+
 ClientPlayer.prototype.update = function(delta, now) {
   Player.prototype.update.call(this, delta, now);
   
@@ -33,3 +39,13 @@ ClientPlayer.prototype.update = function(delta, now) {
 };
 
 
+ClientPlayer.prototype.destroy = function() {
+  this.game.scene.remove(this.mesh);
+  
+  Player.prototype.destroy.call(this);
+};
+
+// REMARK(Jan): removed when rendering is done properly
+ClientPlayer.prototype.setVisible = function (visible) {
+  this.mesh.visible = visible;
+};

@@ -1,6 +1,7 @@
 var GameController = require('../shared/GameController.js');
 var Player = require('../shared/Player.js');
 var utils = require('../shared/utils.js');
+var factory = require('./serverFactory');
 
 // interval at which to update the clients
 var CLIENT_UPDATE_INTERVAL = 50;

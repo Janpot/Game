@@ -4,6 +4,7 @@ var ClientPlayer = require('./ClientPlayer.js');
 var Controls = require('./Controls.js');
 var PlayerstateBuffer = require('../shared/PlayerstateBuffer.js');
 var GameController = require('../shared/GameController.js');
+var factory = require('./clientFactory');
 
 var UPDATE_INTERVAL = 50; // ms, interval at which to update the server
 var ENEMY_OFFSET = 2.5 * UPDATE_INTERVAL; // ms behind actual state
@@ -34,7 +35,7 @@ EnemiesController.prototype.update = function (delta, now) {
 // add a player to the game
 EnemiesController.prototype.addPlayer = function (remote) {
   console.log('adding ' + remote.id);
-  var enemy = new ClientPlayer(remote.id, this.game, {
+  var enemy = new ClientPlayer(remote.id, factory, {
     color: 0x0000FF,
     buffersize: MAX_BUFFERSIZE,
     state: remote.state
@@ -50,7 +51,8 @@ EnemiesController.prototype.addPlayer = function (remote) {
 EnemiesController.prototype.removePlayer = function (id) {
   console.log('removing ' + id);
   var enemy = this.enemies[id]
-  this.game.removePlayer(id);
+  enemy.expired = true;
+  //this.game.removePlayer(id);
   delete this.enemies[id];
 };
 

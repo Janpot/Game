@@ -1,10 +1,12 @@
 var GameObject = require('./GameObject');
+var twoD = require('./twoD');
 
 var Gun;
-module.exports = Gun = function (game, player) {
-  GameObject.call(this, game);
+module.exports = Gun = function (factory) {
+  GameObject.call(this, factory);
   
-  this.player = player;
+  this.position = new twoD.Vector();
+  this.direction = new twoD.Vector();
   
   this.triggerPulled = false;
 
@@ -16,7 +18,12 @@ module.exports = Gun = function (game, player) {
 
 Gun.prototype = Object.create(GameObject.prototype);
 
+Gun.prototype.initialize = function (game) {
+  GameObject.prototype.initialize.call(this, game);
+};
+
 Gun.prototype.update = function (delta, now) {
+  GameObject.prototype.update.call(this, delta, now);
   
   if (!this.triggerPulled || now < this.timeOfNextShot) {
     this.shot = false;
@@ -26,10 +33,8 @@ Gun.prototype.update = function (delta, now) {
   }
   
   if (this.shot) {
-    // TODO(Jan): this won't work on the server because addBullet only exists on the ClientGame
-    // introduce some sort of factory to create environment specific objects on the server and client
-    // Must be done before running update loop on the server!
-    this.game.addBullet(this.player.position.clone(), this.player.lookDir.clone());
+    var bullet = new this.factory.Bullet(this.factory, this.position, this.direction);
+    this.game.addObject(bullet);
   }
   
 };

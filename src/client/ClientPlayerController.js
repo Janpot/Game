@@ -3,6 +3,7 @@ var twoD = require('../shared/twoD');
 var ClientPlayer = require('./ClientPlayer.js');
 var Controls = require('./Controls.js');
 var GameController = require('../shared/GameController.js');
+var factory = require('./clientFactory');
 
 var UPDATE_INTERVAL = 50; // ms, interval at which to update the server
 var ENEMY_OFFSET = 100; // ms behind actual state
@@ -17,7 +18,7 @@ module.exports = ClientPlayerController = function (clientGame, clientSocket) {
   this.width = 0;
   this.height = 0;
   this.socket = clientSocket;
-  this.player = new ClientPlayer(this.socket.socket.sessionid, this.game, {
+  this.player = new ClientPlayer(this.socket.socket.sessionid, factory, {
     position: new THREE.Vector2(0, 0)
   });
   this.game.addPlayer(this.player);
@@ -35,20 +36,16 @@ module.exports = ClientPlayerController = function (clientGame, clientSocket) {
 ClientPlayerController.prototype = Object.create(GameController.prototype);
 
 // update the game state according to the controls
-ClientPlayerController.prototype.update = function (delta, now) {
-  
+ClientPlayerController.prototype.update = function (delta, now) {  
   var input = this.controls.getInput();  
-  this.player.applyInput(input, delta);  
-  
-  this.player.gun.update(delta, now)
+  this.player.applyInput(input, delta);
     
   this.game.setViewPosition(this.player.position);
   
   this.inputBuffer.push({
     input: input,
     delta: delta
-  });
-  
+  });  
 };
    
 

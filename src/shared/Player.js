@@ -19,8 +19,8 @@ var PlayerstateBuffer = require('../shared/PlayerstateBuffer');
 //   boundingRadius: number
 // }
 var Player;
-module.exports = Player = function (id, game, cfg) {
-  GameObject.call(this, game);
+module.exports = Player = function (id, factory, cfg) {
+  GameObject.call(this, factory);
   
   var cfg = cfg || {};
   cfg.state = cfg.state || {};
@@ -53,10 +53,25 @@ module.exports = Player = function (id, game, cfg) {
     this.stateBuffer = new PlayerstateBuffer(cfg.buffersize);
   }
   
-  this.gun = new Gun(this.game, this);
+  this.gun = new Gun(this.factory);
+  
 };
 
 Player.prototype = Object.create(GameObject.prototype);
+
+// returns a serializable object representing the state of this player
+Player.prototype.initialize = function(game) {
+  GameObject.prototype.initialize.call(this, game);
+  
+  this.game.addObject(this.gun);
+};
+
+// returns a serializable object representing the state of this player
+Player.prototype.destroy = function(game) {
+  this.game.removeObject(this.gun);
+  
+  GameObject.prototype.destroy.call(this);
+};
 
 // returns a serializable object representing the state of this player
 Player.prototype.serializeState = function() {
@@ -88,7 +103,9 @@ Player.prototype.setBufferedState = function(time) {
 // Update player state with a timeframe of delta
 Player.prototype.update = function (delta, now) {
   GameObject.prototype.update.call(this, delta, now);
-  this.gun.update(delta, now);
+  
+  this.gun.position.copy(this.position);
+  this.gun.direction.copy(this.lookDir);
 };
 
 // Update player position according to his walking direction

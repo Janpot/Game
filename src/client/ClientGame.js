@@ -3,7 +3,6 @@ var twoD = require('../shared/twoD');
 var Game = require('../shared/Game.js');
 var utils = require('../shared/utils.js');
 var ClientWall = require('./ClientWall.js');
-var Bullet = require('./Bullet.js');
 var ClientPlayerController = require('./ClientPlayerController.js');
 var EnemiesController = require('./EnemiesController.js');
 var GameStats = require('./GameStats.js');
@@ -28,8 +27,6 @@ module.exports = ClientGame = function (cfg) {
   
   this.camera = new THREE.PerspectiveCamera(45, 1, 0.1, 1000);
   this.camera.position.z = 50;
-  
-  this.bullets = [];
 };
 
 ClientGame.prototype = Object.create(Game.prototype);
@@ -95,28 +92,6 @@ ClientGame.prototype.initViewport = (function() {
   };
 })();
 
-// add a player to the world
-ClientGame.prototype.addPlayer = function(player) {
-  Game.prototype.addPlayer.call(this, player);
-  this.scene.add(player.mesh);
-};
-
-// remove a player from the world
-ClientGame.prototype.removePlayer = function(id) {
-  var removedPlayer = Game.prototype.removePlayer.call(this, id);
-  if (removedPlayer !== undefined) {
-    this.scene.remove(removedPlayer.mesh);
-  }
-};
-
-
-
-ClientGame.prototype.addBullet = function (position, direction) {
-  var bullet = new Bullet(position, direction);
-  this.bullets.push(bullet);
-  this.scene.add(bullet.mesh);
-};
-
 // initialize the world
 ClientGame.prototype.init = function () {
   // init scene      
@@ -173,11 +148,6 @@ ClientGame.prototype.update = function () {
     this.enemiesController.update(delta, now);
     
     this.updateObjects(delta, now);
-    
-    // update bullets
-    for (var i = 0; i < this.bullets.length; i++) {
-      this.bullets[i].update(delta);
-    }
   }));
 };
 
@@ -227,14 +197,6 @@ ClientGame.prototype.VISIBLE_PARTS = 0;
 ClientGame.prototype.OBSCURED_PARTS = 1;
 ClientGame.prototype.OBSCURING_MASK = 2;
 
-// set the visibility of the players
-ClientGame.prototype.setPlayersVisible = function (visible) {
-  for (var i = 0; i < this.players.length; i++) {
-    var player = this.players[i];
-    player.mesh.visible = visible;
-  }
-};
-
 // sets the visibility of the parts of the wall
 ClientGame.prototype.setHidingblocksVisible = function (visible) {
   for (var i = 0; i < this.walls.length; i++) {
@@ -242,15 +204,18 @@ ClientGame.prototype.setHidingblocksVisible = function (visible) {
   }
 };
 
-// set the visibility of the bullets
-ClientGame.prototype.setBulletsVisible = function (visible) {
-  for (var i = 0; i < this.bullets.length; i++) {
-    var bullet = this.bullets[i];
-    bullet.mesh.visible = visible;
+// set the visibility of the objects
+// REMARK(Jan): a bit hacky but removed when rendering is done properly
+ClientGame.prototype.setObjectsVisible = function (visible) {
+  for (var i = 0; i < this.objects.length; i++) {
+    var object = this.objects[i];
+    if (object.setVisible) {
+      object.setVisible(visible);
+    }
   }
 };
 
-// set the visibility of the bullets
+// set the visibility of the environment
 ClientGame.prototype.setEnvironmentVisible = function (visible) {
   for (var objectid in this.environment) {
     this.environment[objectid].visible = visible;
@@ -262,22 +227,19 @@ ClientGame.prototype.setMode = function (mode) {
     case this.VISIBLE_PARTS:
       this.setEnvironmentVisible(true);
       this.setHidingblocksVisible(false);
-      this.setPlayersVisible(true);
-      this.setBulletsVisible(true);
+      this.setObjectsVisible(true);
       break;
     case this.OBSCURED_PARTS:
       this.setEnvironmentVisible(true);
       this.setHidingblocksVisible(false);
-      this.setPlayersVisible(false);
-      this.setBulletsVisible(false);
+      this.setObjectsVisible(false);
       this.hidingLight.visible = true;
       this.playerLight.visible = false;
       break;
     case this.OBSCURING_MASK:
       this.setEnvironmentVisible(false);
       this.setHidingblocksVisible(true);
-      this.setPlayersVisible(false);
-      this.setBulletsVisible(false);
+      this.setObjectsVisible(false);
       this.hidingLight.visible = false;
       this.playerLight.visible = true;
       break;

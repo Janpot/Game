@@ -1,7 +1,8 @@
 
 
 // Base class for a game
-var Game = function (cfg) {
+var Game;
+module.exports = Game = function (cfg) {
   
   this.objects = [];
   
@@ -12,7 +13,31 @@ var Game = function (cfg) {
 };
 
 
-module.exports = Game;
+// adds a GameObject to this game 
+Game.prototype.addObject = function (gameObject) {
+  gameObject.initialize(this);
+  this.objects.push(gameObject);
+};
+
+// removes a GameObject from this game 
+Game.prototype.removeObject = function (toRemove) {
+  toRemove.expired = true;
+};
+
+// updates the objects in this game
+Game.prototype.updateObjects = function (delta, now) {
+  this.objects = this.objects.filter(function (object) {
+    if (object.expired) {
+      object.destroy();
+      return false;
+    } else {
+      return true;
+    }
+  });
+  for (var i = 0; i < this.objects.length; i++) {
+    this.objects[i].update(delta, now);    
+  }
+};
 
 
 Game.prototype.addPlayer = function (player) {
@@ -36,31 +61,4 @@ Game.prototype.getPlayer = function (id) {
     }
   }
   return undefined;
-};
-
-// adds a GameObject to this game 
-Game.prototype.addObject = function (gameObject) {
-  this.objects.push(gameObject);
-};
-
-// removes a GameObject from this game 
-Game.prototype.removeObject = function (toRemove) {
-  this.objects = this.objects.filter(function (object) {
-    return object !== toRemove;
-  });
-};
-
-// updates the objects in this game
-Game.prototype.updateObjects = function (delta, now) {
-  for (var i = 0; i < this.objects.length; i++) {
-    var object = this.objects[i];
-    if (object.expired) {
-      // remove object
-      object.destroy();
-      this.objects.splice(i, 1);
-      i--;
-    } else {
-      this.objects[i].update(delta, now);
-    }
-  }
 };
