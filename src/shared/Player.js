@@ -1,3 +1,4 @@
+var GameObject = require('./GameObject');
 var utils = require('./utils');
 var twoD = require('./twoD');
 var dynamics = require('./dynamics');
@@ -9,6 +10,7 @@ var PlayerstateBuffer = require('../shared/PlayerstateBuffer');
 //
 // id: string
 // cfg: {
+//   id: string,
 //   speed: number,
 //   state: {
 //     position: twoD.Vector,
@@ -16,13 +18,14 @@ var PlayerstateBuffer = require('../shared/PlayerstateBuffer');
 //   },
 //   boundingRadius: number
 // }
-var Player = function (id, world, cfg) {  
+var Player;
+module.exports = Player = function (id, game, cfg) {
+  GameObject.call(this, game);
+  
   var cfg = cfg || {};
   cfg.state = cfg.state || {};
   
   this.id = id;
-  
-  this.world = world;
   
   // Player speed
   this.speed = cfg.speed || 12; // m/s  
@@ -50,10 +53,10 @@ var Player = function (id, world, cfg) {
     this.stateBuffer = new PlayerstateBuffer(cfg.buffersize);
   }
   
-  this.gun = new Gun();
+  this.gun = new Gun(this.game, this);
 };
 
-module.exports = Player;
+Player.prototype = Object.create(GameObject.prototype);
 
 // returns a serializable object representing the state of this player
 Player.prototype.serializeState = function() {
@@ -83,8 +86,9 @@ Player.prototype.setBufferedState = function(time) {
 };
 
 // Update player state with a timeframe of delta
-Player.prototype.update = function (delta) {
-  
+Player.prototype.update = function (delta, now) {
+  GameObject.prototype.update.call(this, delta, now);
+  this.gun.update(delta, now);
 };
 
 // Update player position according to his walking direction
@@ -104,7 +108,7 @@ Player.prototype.moveAndCollide = function (track) {
   var s = dynamics.collideCircleWorld(
     this.position, this.boundingRadius, 
     track, 
-    this.world,
+    this.game,
     altTrack
   );
   
@@ -119,7 +123,7 @@ Player.prototype.moveAndCollide = function (track) {
     s = dynamics.collideCircleWorld(
       this.position, this.boundingRadius, 
       altTrack, 
-      this.world
+      this.game
     );
     
     // move player over alternative track
@@ -143,7 +147,7 @@ Player.prototype.applyInput = function (input, delta) {
               
   this.updatePosition(delta);
   
-  this.gun.update(input.leftMouse);
+  this.gun.triggerPulled = input.leftMouse;
 };
 
 

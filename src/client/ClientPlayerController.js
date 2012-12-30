@@ -35,15 +35,13 @@ module.exports = ClientPlayerController = function (clientGame, clientSocket) {
 ClientPlayerController.prototype = Object.create(GameController.prototype);
 
 // update the game state according to the controls
-ClientPlayerController.prototype.update = function (delta) {
+ClientPlayerController.prototype.update = function (delta, now) {
   
   var input = this.controls.getInput();  
-  this.player.applyInput(input, delta);
+  this.player.applyInput(input, delta);  
   
-  if (this.player.gun.shot) {
-    this.game.addBullet(this.player.position.clone(), this.player.lookDir.clone());
-  }
-  
+  this.player.gun.update(delta, now)
+    
   this.game.setViewPosition(this.player.position);
   
   this.inputBuffer.push({

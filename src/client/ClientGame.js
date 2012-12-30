@@ -167,14 +167,12 @@ ClientGame.prototype.isVisible = function (position) {
 // update the world with a timeframe of delta
 ClientGame.prototype.update = function () {
   this.stats.measureGameloop(utils.bind(this, function() {
+    var now = Date.now();
     var delta = PHYSICS_LOOP / 1000;
-    this.playerController.update(delta);
-    this.enemiesController.update(delta);
+    this.playerController.update(delta, now);
+    this.enemiesController.update(delta, now);
     
-    // update players
-    for (var i = 0; i < this.players.length; i++) {
-      this.players[i].update(delta);
-    }
+    this.updateObjects(delta, now);
     
     // update bullets
     for (var i = 0; i < this.bullets.length; i++) {

@@ -23,7 +23,7 @@ module.exports = EnemiesController = function (clientGame, clientSocket) {
 EnemiesController.prototype = Object.create(GameController.prototype);
 
 // update the game state according to the controls
-EnemiesController.prototype.update = function (delta) {
+EnemiesController.prototype.update = function (delta, now) {
   var offsetNow = window.performance.now() - ENEMY_OFFSET;
   for (var enemyid in this.enemies) {
     var enemy = this.enemies[enemyid];

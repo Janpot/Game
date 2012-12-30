@@ -22,8 +22,8 @@ var ClientPlayer = module.exports = function (id, world, cfg) {
 
 ClientPlayer.prototype = Object.create(Player.prototype);
 
-ClientPlayer.prototype.update = function(delta) {
-  Player.prototype.update.call(this, delta);
+ClientPlayer.prototype.update = function(delta, now) {
+  Player.prototype.update.call(this, delta, now);
   
   var angle = utils.angleBetweenVector2(new THREE.Vector2(1, 0), this.lookDir);  
   

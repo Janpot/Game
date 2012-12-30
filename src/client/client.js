@@ -52,7 +52,7 @@ socket.on('initialize', function (config) {
 var onGameLoaded = function (game) {    
   
   // for debugging purposes
-  // window.world = game;
+   window.world = game;
   
   endLoading();
   game.start(viewport, socket);
