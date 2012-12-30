@@ -1,5 +1,7 @@
 module.exports = {
 
-  Bullet: require('./ClientBullet')
+  Bullet: require('./ClientBullet'),
+  
+  Shot: require('./ClientShot')
 
 }

@@ -1,5 +1,6 @@
 var GameObject = require('./GameObject');
 var twoD = require('./twoD');
+var dynamics = require('./dynamics');
 
 var Bullet;
 module.exports = Bullet = function (factory, position, direction) {
@@ -25,5 +26,12 @@ Bullet.prototype.update = function (delta, now) {
     this.expired = true;
   }
   
-  this.position.addSelf(this.direction.normalize().multiplyScalar(delta * this.speed));
+  var track = this.direction.normalize().multiplyScalar(delta * this.speed)
+  var s = dynamics.collidePointWalls(this.position, track, this.game);
+  
+  if (s) {
+    this.expired = true;
+  } else {
+    this.position.addSelf(track);
+  }
 };

@@ -38,7 +38,8 @@ ClientPlayerController.prototype = Object.create(GameController.prototype);
 // update the game state according to the controls
 ClientPlayerController.prototype.update = function (delta, now) {  
   var input = this.controls.getInput();  
-  this.player.applyInput(input, delta);
+  this.player.applyInput(input);
+  this.player.updatePosition(delta);
     
   this.game.setViewPosition(this.player.position);
   
@@ -122,14 +123,16 @@ ClientPlayerController.prototype.handleCorrections = function(serverGame) {
       var update = this.pendingUpdates[i];
       for (var j = 0; j < update.sentInput.length; j++) {
         var inputData = update.sentInput[j];
-        this.player.applyInput(inputData.input, inputData.delta);
+        this.player.applyInput(inputData.input);
+        this.player.updatePosition(inputData.delta);
       }
     }
     
     // apply current inputbuffer
     for (var i = 0; i < this.inputBuffer.length; i++) {
       var inputData = this.inputBuffer[i];
-      this.player.applyInput(inputData.input, inputData.delta);
+      this.player.applyInput(inputData.input);
+      this.player.updatePosition(inputData.delta);
     }
     
   }

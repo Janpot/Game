@@ -73,10 +73,21 @@ ServerPlayerController.prototype.destroy = function () {
 
 
 ServerPlayerController.prototype.handlePlayerinput = function (data) {
-  for (var i = 0; i < data.buffer.length; i++) {
+  var delta = PHYSICS_DELTA / 1000;
+  var now = Date.now();
+  var updateCount = data.buffer.length;
+  for (var i = 0; i < updateCount; i++) {
+    var timeOfInput = now - (updateCount - i - 1) * PHYSICS_DELTA;
     var input = data.buffer[i];
-    this.player.applyInput(input, PHYSICS_DELTA / 1000);
-  }
+    
+    this.player.applyInput(input);
+    this.player.updatePosition(delta);
+    this.player.gun.update(delta, timeOfInput);
+    if (this.player.gun.firing) {
+      console.log(this.player.id + ' is firing'); 
+    }
+  }  
+  
   this.player.lastClientUpdate = data.clientTime;
   this.player.lastServerUpdate = Date.now();
 };

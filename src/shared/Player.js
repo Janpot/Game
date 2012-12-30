@@ -53,22 +53,22 @@ module.exports = Player = function (id, factory, cfg) {
     this.stateBuffer = new PlayerstateBuffer(cfg.buffersize);
   }
   
+  this.health = 100;
+  
   this.gun = new Gun(this.factory);
   
 };
 
 Player.prototype = Object.create(GameObject.prototype);
 
-// returns a serializable object representing the state of this player
-Player.prototype.initialize = function(game) {
+Player.prototype.initialize = function (game) {
   GameObject.prototype.initialize.call(this, game);
   
-  this.game.addObject(this.gun);
+  this.gun.initialize(this.game);
 };
 
-// returns a serializable object representing the state of this player
-Player.prototype.destroy = function(game) {
-  this.game.removeObject(this.gun);
+Player.prototype.destroy = function () {
+  this.gun.destroy();
   
   GameObject.prototype.destroy.call(this);
 };
@@ -106,6 +106,10 @@ Player.prototype.update = function (delta, now) {
   
   this.gun.position.copy(this.position);
   this.gun.direction.copy(this.lookDir);
+  this.gun.update(delta, now);
+  if (this.gun.firing) {
+    console.log('firing', this.gun.shot);
+  }
 };
 
 // Update player position according to his walking direction
@@ -161,8 +165,6 @@ Player.prototype.applyInput = function (input, delta) {
   this.lookDir.copy(input.mouse)
               .subSelf(this.position)
               .normalize();
-              
-  this.updatePosition(delta);
   
   this.gun.triggerPulled = input.leftMouse;
 };

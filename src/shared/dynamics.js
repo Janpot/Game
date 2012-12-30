@@ -44,6 +44,64 @@ dynamics.collidePointLine = function (P, track, L, u, altTrack) {
   return undefined;
 };
 
+// collide a point moving along a vector (track) with the walls of a world
+// returns a fraction of track between [0, 1] or undefined when no collision
+dynamics.collidePointWalls = function (P, track, world) {
+  
+  var s = undefined;
+  
+  // calculate bounding box for the moving player
+  var movementBounds = new twoD.Rectangle();
+  movementBounds.addPoint(P.x, P.y);
+  movementBounds.addPoint(P.x + track.x, P.y + track.y);
+  
+  // bounding box for objects to collide with
+  var objectBounds = new twoD.Rectangle();
+  
+  // collide with walls
+  for (var i = 0; i < world.walls.length; i++) {      
+    var wall = world.walls[i];    
+    
+    // quickly test bounding boxes to avoid extra calculations
+    if (!wall.bounds.intersects(movementBounds)) {
+      // early out
+      continue;
+    }
+      
+         
+    var objCount = wall.corners.length;
+    for (var j = 0; j < objCount; j++) {
+      // current wall: (p1, p2)
+      var p1 = wall.corners[j];
+      var p2 = wall.corners[(j + 1) % objCount];
+      
+      // quickly test bounding boxes to avoid extra calculations
+      objectBounds.empty();
+      objectBounds.addPoint(p1.x, p1.y);
+      objectBounds.addPoint(p2.x, p2.y);        
+      if (!objectBounds.intersects(movementBounds)) {
+        // early out
+        continue;
+      }
+      
+      // calculate the collision
+      var wallVector = new twoD.Vector().sub(p2, p1);
+      var sWall = dynamics.collidePointLine(P, track, p1, wallVector);
+      
+      if (sWall !== undefined) {
+        // We have a collision
+        
+        if (s === undefined || sWall < s) {
+          // Collision is closer on the track than previous collisions          
+          s = sWall;
+        }
+      }
+    }
+  }
+  
+  return s;
+};
+
 // collide a circle (C1, r1) moving along a vector (track) with another circle (C2, r2)
 // returns a fraction of track between [0, 1] or undefined when no collision
 // sets altTrack to an alternative track if it is provided

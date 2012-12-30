@@ -207,8 +207,8 @@ ClientGame.prototype.setHidingblocksVisible = function (visible) {
 // set the visibility of the objects
 // REMARK(Jan): a bit hacky but removed when rendering is done properly
 ClientGame.prototype.setObjectsVisible = function (visible) {
-  for (var i = 0; i < this.objects.length; i++) {
-    var object = this.objects[i];
+  for (var i = 0; i < this.updatedObjects.length; i++) {
+    var object = this.updatedObjects[i];
     if (object.setVisible) {
       object.setVisible(visible);
     }

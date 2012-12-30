@@ -92,20 +92,3 @@ ServerGame.load = function (level) {
 //     }
 //   }
 // }
-ServerGame.prototype.serializeState = function () {  
-  var players = {};
-  var now = Date.now();
-  for (var i = 0; i < this.players.length; i++) {
-    var player = this.players[i];
-    players[player.id] = {
-      id: player.id,
-      delta: player.lastUpdate - now,
-      state: player.serializeState()
-    }
-  }
-  
-  return {
-    level: this.level,
-    players: players
-  }
-};

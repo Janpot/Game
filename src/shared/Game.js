@@ -4,7 +4,7 @@
 var Game;
 module.exports = Game = function (cfg) {
   
-  this.objects = [];
+  this.updatedObjects = [];
   
   this.players = [];
   
@@ -14,19 +14,19 @@ module.exports = Game = function (cfg) {
 
 
 // adds a GameObject to this game 
-Game.prototype.addObject = function (gameObject) {
+Game.prototype.addObjectToLoop = function (gameObject) {
   gameObject.initialize(this);
-  this.objects.push(gameObject);
+  this.updatedObjects.push(gameObject);
 };
 
 // removes a GameObject from this game 
-Game.prototype.removeObject = function (toRemove) {
+Game.prototype.removeObjectFromLoop = function (toRemove) {
   toRemove.expired = true;
 };
 
 // updates the objects in this game
 Game.prototype.updateObjects = function (delta, now) {
-  this.objects = this.objects.filter(function (object) {
+  this.updatedObjects = this.updatedObjects.filter(function (object) {
     if (object.expired) {
       object.destroy();
       return false;
@@ -34,23 +34,23 @@ Game.prototype.updateObjects = function (delta, now) {
       return true;
     }
   });
-  for (var i = 0; i < this.objects.length; i++) {
-    this.objects[i].update(delta, now);    
+  for (var i = 0; i < this.updatedObjects.length; i++) {
+    this.updatedObjects[i].update(delta, now);    
   }
 };
 
 
 Game.prototype.addPlayer = function (player) {
   this.players.push(player);
-  this.addObject(player);
+  this.addObjectToLoop(player);
 };
 
 Game.prototype.removePlayer = function (id) {
-  var player = this.getPlayer();
+  var player = this.getPlayer(id);
   this.players = this.players.filter(function (player) {
     return player.id !== id;
   });
-  this.removeObject(player);
+  this.removeObjectFromLoop(player);
   return player;
 };
 
