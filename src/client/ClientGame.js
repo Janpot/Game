@@ -25,6 +25,8 @@ module.exports = ClientGame = function (cfg) {
   
   this.camera = new THREE.PerspectiveCamera(45, 1, 0.1, 1000);
   this.camera.position.z = 50;
+  
+  this.lastRenderTime;
 };
 
 ClientGame.prototype = Object.create(Game.prototype);
@@ -147,8 +149,13 @@ ClientGame.prototype.update = function (delta, now) {
 
 // Renders the world with the given renderer
 ClientGame.prototype.render = function () {
+  var now = Date.now();
+  this.lastRenderTime = this.lastRenderTime || now;
+  var delta = now - this.lastRenderTime;
   this.stats.measureRenderloop(utils.bind(this, function() {
-    this.initViewport();  
+    this.initViewport();
+    
+    Game.prototype.render.call(this, delta, now);
     
     var ctx = this.renderer.context;
     this.renderer.clear();

@@ -83,11 +83,12 @@ ServerPlayerController.prototype.handlePlayerinput = function (data) {
     var timeOfInput = now - (updateCount - i - 1) * PHYSICS_DELTA;
     var input = data.buffer[i];
     
-    this.player.applyInput(input);
-    this.player.updatePosition(delta);
+    this.player.applyInput(input, delta);
     this.player.update(delta, timeOfInput);
+    
     this.player.storeState(timeOfInput);
     if (this.player.gun.firing) {
+      console.log(this.player.id + ' is firing');
       this.shoot(this.player.gun.shot, timeOfInput);
     }
   }  
@@ -115,7 +116,7 @@ ServerPlayerController.prototype.shoot = function (shot, time) {
   }
   
   if (victim) {
-    victim.health -= 20;
+    victim.health = Math.max(victim.health - 20, 0);
   }
   
 };

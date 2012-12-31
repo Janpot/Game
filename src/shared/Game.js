@@ -52,6 +52,14 @@ Game.prototype.update = function (delta, now) {
   }
 };
 
+// updates the objects in this game
+Game.prototype.render = function (delta, now) {
+  for (var i = 0; i < this.objects.length; i++) {
+    var object = this.objects[i];
+    object.render(delta, now);
+  }
+};
+
 
 Game.prototype.addPlayer = function (player) {
   this.addObject(player);

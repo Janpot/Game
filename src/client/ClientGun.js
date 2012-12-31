@@ -28,8 +28,8 @@ ClientGun.prototype.initialize = function (game) {
   this.game.scene.add(this.line); 
 };
 
-ClientGun.prototype.update = function (delta, now) {
-  Gun.prototype.update.apply(this, arguments);
+ClientGun.prototype.render = function (delta, now) {
+  Gun.prototype.render.apply(this, arguments);
   
   if (this.firing) {
     this.twoDEnd.copy(this.shot.origin)
@@ -48,9 +48,4 @@ ClientGun.prototype.destroy = function () {
   this.game.scene.remove(this.line); 
   
   Gun.prototype.destroy.apply(this, arguments);
-};
-
-// REMARK(Jan): removed when rendering is done properly
-ClientGun.prototype.setVisible = function (visible) {
-  this.line.visible = visible;
 };

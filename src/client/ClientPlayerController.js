@@ -19,9 +19,9 @@ module.exports = ClientPlayerController = function (clientGame, clientSocket) {
   this.height = 0;
   this.socket = clientSocket;
   this.player = new ClientPlayer(this.socket.socket.sessionid, factory, {
-    position: new THREE.Vector2(0, 0),
-    autoUpdate: true
+    position: new THREE.Vector2(0, 0)
   });
+  this.player.autoUpdate = true;
   
   this.game.addPlayer(this.player);
   
@@ -41,8 +41,7 @@ ClientPlayerController.prototype = Object.create(GameController.prototype);
 // update the game state according to the controls
 ClientPlayerController.prototype.update = function (delta, now) {  
   var input = this.controls.getInput();  
-  this.player.applyInput(input);
-  this.player.updatePosition(delta);
+  this.player.applyInput(input, delta);
     
   this.game.setViewPosition(this.player.position);
   
@@ -91,7 +90,6 @@ ClientPlayerController.prototype.handleCorrections = function(serverGame) {
     // already corrected
     return;
   };
-  this.lastCorrectionTime = serverGame.player.updateTime;
 
   // clean up out of date pending updates
   this.pendingUpdates = this.pendingUpdates.filter(function (update) {
@@ -100,22 +98,22 @@ ClientPlayerController.prototype.handleCorrections = function(serverGame) {
   
   // apply pending server updates
   this.player.unserializeState(serverGame.player.state);
+  
   for (var i = 0; i < this.pendingUpdates.length; i++) {
     var update = this.pendingUpdates[i];
     for (var j = 0; j < update.sentInput.length; j++) {
       var inputData = update.sentInput[j];
-      this.player.applyInput(inputData.input);
-      this.player.updatePosition(inputData.delta);
+      this.player.applyInput(inputData.input, inputData.delta);
     }
   }
   
   // apply current inputbuffer
   for (var i = 0; i < this.inputBuffer.length; i++) {
     var inputData = this.inputBuffer[i];
-    this.player.applyInput(inputData.input);
-    this.player.updatePosition(inputData.delta);
+    this.player.applyInput(inputData.input, inputData.delta);
   }
   
+  this.lastCorrectionTime = serverGame.player.updateTime;
 };
 
 

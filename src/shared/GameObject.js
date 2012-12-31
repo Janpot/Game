@@ -17,6 +17,9 @@ module.exports = GameObject = function (factory) {
   
   // use this property to expire the object
   this.expired = false;
+  
+  // use this to signal this object should be updated in de gameloop
+  this.autoUpdate = false;
 };
 
 // initializes the object in a game
@@ -26,6 +29,11 @@ GameObject.prototype.initialize = function (game) {
 
 // update this object in the gameloop
 GameObject.prototype.update = function (delta, now) {
+
+};
+
+// render this object in the renderloop
+GameObject.prototype.render = function (delta, now) {
 
 };
 

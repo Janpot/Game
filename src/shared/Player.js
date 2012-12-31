@@ -23,8 +23,6 @@ var Player;
 module.exports = Player = function (id, factory, cfg) {
   GameObject.call(this, factory);
   
-  this.autoUpdate = cfg.autoUpdate || false;
-  
   var cfg = cfg || {};
   cfg.state = cfg.state || {};
   
@@ -67,11 +65,11 @@ Player.prototype = Object.create(GameObject.prototype);
 Player.prototype.initialize = function (game) {
   GameObject.prototype.initialize.call(this, game);
   
-  this.gun.initialize(this.game);
+  this.game.addObject(this.gun);
 };
 
 Player.prototype.destroy = function () {
-  this.gun.destroy();
+  this.game.removeObject(this.gun);
   
   GameObject.prototype.destroy.call(this);
 };
@@ -113,7 +111,6 @@ Player.prototype.setBufferedState = function(time) {
 // Update player state with a timeframe of delta
 Player.prototype.update = function (delta, now) {
   GameObject.prototype.update.call(this, delta, now);
-  
   this.gun.position.copy(this.position);
   this.gun.direction.copy(this.lookDir);
   this.gun.update(delta, now);
@@ -172,6 +169,8 @@ Player.prototype.applyInput = function (input, delta) {
   this.lookDir.copy(input.mouse)
               .subSelf(this.position)
               .normalize();
+  
+  this.updatePosition(delta);
   
   this.gun.triggerPulled = input.leftMouse;
 };

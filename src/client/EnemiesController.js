@@ -40,7 +40,7 @@ EnemiesController.prototype.addPlayer = function (remote) {
     color: 0x0000FF,
     buffersize: MAX_BUFFERSIZE,
     state: remote.state,
-    autoUpdate: true
+    autoUpdate: false
   });
   this.enemies[remote.id] = enemy;
   this.game.addPlayer(enemy);

@@ -28,14 +28,14 @@ ClientPlayer.prototype.initialize = function(game) {
   this.game.scene.add(this.mesh);
 };
 
-ClientPlayer.prototype.update = function(delta, now) {
-  Player.prototype.update.call(this, delta, now);
+ClientPlayer.prototype.render = function(delta, now) {
+  Player.prototype.render.call(this, delta, now);
   
   var angle = utils.angleBetweenVector2(new THREE.Vector2(1, 0), this.lookDir);  
   
   // update mesh
   this.mesh.position.set(this.position.x, this.position.y, 0.5);
-  this.mesh.rotation.set(0, 0, angle);  
+  this.mesh.rotation.set(0, 0, angle);
 };
 
 
