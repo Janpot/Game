@@ -25,9 +25,10 @@ EnemiesController.prototype = Object.create(GameController.prototype);
 
 // update the game state according to the controls
 EnemiesController.prototype.update = function (delta, now) {
-  var offsetNow = window.performance.now() - ENEMY_OFFSET;
+  var offsetNow = now - ENEMY_OFFSET;
   for (var enemyid in this.enemies) {
-    var enemy = this.enemies[enemyid];
+    var enemy = this.enemies[enemyid];    
+    //console.log(enemy.id + ': ' + enemy.health);
     enemy.setBufferedState(offsetNow);  
   }
 };
@@ -38,21 +39,21 @@ EnemiesController.prototype.addPlayer = function (remote) {
   var enemy = new ClientPlayer(remote.id, factory, {
     color: 0x0000FF,
     buffersize: MAX_BUFFERSIZE,
-    state: remote.state
+    state: remote.state,
+    autoUpdate: true
   });
-  this.enemies[remote.id] = enemy;      
+  this.enemies[remote.id] = enemy;
   this.game.addPlayer(enemy);
   
-  var now = window.performance.now();
+  var now = Date.now();
   enemy.stateBuffer.add(remote.state, now + remote.delta);
 };
 
 // remove a player from the game
 EnemiesController.prototype.removePlayer = function (id) {
   console.log('removing ' + id);
-  var enemy = this.enemies[id]
-  enemy.expired = true;
-  //this.game.removePlayer(id);
+  var enemy = this.enemies[id];
+  this.game.removePlayer(id);
   delete this.enemies[id];
 };
 
@@ -65,7 +66,7 @@ EnemiesController.prototype.updateGameState = function (game) {
       this.removePlayer(enemyid);
     } else {
       // update the buffer of this player
-      var now = window.performance.now();      
+      var now = Date.now();      
       this.enemies[enemyid].stateBuffer.add(remote.state, now + remote.delta);
     }
   }

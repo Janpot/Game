@@ -16,11 +16,14 @@ var PlayerstateBuffer = require('../shared/PlayerstateBuffer');
 //     position: twoD.Vector,
 //     lookDir: twoD.Vector
 //   },
-//   boundingRadius: number
+//   boundingRadius: number,
+//   buffersize: number
 // }
 var Player;
 module.exports = Player = function (id, factory, cfg) {
   GameObject.call(this, factory);
+  
+  this.autoUpdate = cfg.autoUpdate || false;
   
   var cfg = cfg || {};
   cfg.state = cfg.state || {};
@@ -55,7 +58,7 @@ module.exports = Player = function (id, factory, cfg) {
   
   this.health = 100;
   
-  this.gun = new Gun(this.factory);
+  this.gun = new this.factory.Gun(this.factory);
   
 };
 
@@ -83,8 +86,14 @@ Player.prototype.serializeState = function() {
     lookDir: {
       x: this.lookDir.x,
       y: this.lookDir.y
-    }
+    },
+    hp: this.health
   }
+};
+
+// Stores the current playerstate in the buffer at desired time
+Player.prototype.storeState = function(time) {
+  this.stateBuffer.add(this.serializeState(), time || Date.now());
 };
 
 // sets the state of this player to a provided state, same configuration as
@@ -92,12 +101,13 @@ Player.prototype.serializeState = function() {
 Player.prototype.unserializeState = function(state) {
   this.position.copy(state.position);
   this.lookDir.copy(state.lookDir);
+  this.health = state.hp;
 };
 
 // Sets the player to a state in the buffer at [time]
 Player.prototype.setBufferedState = function(time) {
-  var state = this.stateBuffer.get(time);      
-  this.unserializeState(state);  
+  var state = this.stateBuffer.get(time);
+  this.unserializeState(state);   
 };
 
 // Update player state with a timeframe of delta
@@ -107,9 +117,6 @@ Player.prototype.update = function (delta, now) {
   this.gun.position.copy(this.position);
   this.gun.direction.copy(this.lookDir);
   this.gun.update(delta, now);
-  if (this.gun.firing) {
-    console.log('firing', this.gun.shot);
-  }
 };
 
 // Update player position according to his walking direction

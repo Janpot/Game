@@ -27,4 +27,5 @@ exports.start = function (io) {
 
 exports.addGame = function (id, game) {
   games[id] = game;
+  game.start();
 }

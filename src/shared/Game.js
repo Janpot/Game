@@ -1,10 +1,12 @@
+var utils = require('./utils');
 
+var PHYSICS_LOOP = 16; // ms
 
 // Base class for a game
 var Game;
 module.exports = Game = function (cfg) {
   
-  this.updatedObjects = [];
+  this.objects = [];
   
   this.players = [];
   
@@ -12,21 +14,29 @@ module.exports = Game = function (cfg) {
 
 };
 
+Game.prototype.start = function () {  
+  // start gameloop
+  setInterval(utils.bind(this, function() {
+    var now = Date.now();
+    var delta = PHYSICS_LOOP / 1000;
+    this.update(delta, now);
+  }), PHYSICS_LOOP);
+};
 
 // adds a GameObject to this game 
-Game.prototype.addObjectToLoop = function (gameObject) {
+Game.prototype.addObject = function (gameObject) {
   gameObject.initialize(this);
-  this.updatedObjects.push(gameObject);
+  this.objects.push(gameObject);
 };
 
 // removes a GameObject from this game 
-Game.prototype.removeObjectFromLoop = function (toRemove) {
+Game.prototype.removeObject = function (toRemove) {
   toRemove.expired = true;
 };
 
 // updates the objects in this game
-Game.prototype.updateObjects = function (delta, now) {
-  this.updatedObjects = this.updatedObjects.filter(function (object) {
+Game.prototype.update = function (delta, now) {
+  this.objects = this.objects.filter(function (object) {
     if (object.expired) {
       object.destroy();
       return false;
@@ -34,23 +44,26 @@ Game.prototype.updateObjects = function (delta, now) {
       return true;
     }
   });
-  for (var i = 0; i < this.updatedObjects.length; i++) {
-    this.updatedObjects[i].update(delta, now);    
+  for (var i = 0; i < this.objects.length; i++) {
+    var object = this.objects[i];
+    if (object.autoUpdate) {
+      object.update(delta, now);
+    }   
   }
 };
 
 
 Game.prototype.addPlayer = function (player) {
+  this.addObject(player);
   this.players.push(player);
-  this.addObjectToLoop(player);
 };
 
 Game.prototype.removePlayer = function (id) {
   var player = this.getPlayer(id);
+  this.removeObject(player);
   this.players = this.players.filter(function (player) {
     return player.id !== id;
   });
-  this.removeObjectFromLoop(player);
   return player;
 };
 

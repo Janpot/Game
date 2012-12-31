@@ -1,6 +1,7 @@
-var GameController = require('../shared/GameController.js');
-var Player = require('../shared/Player.js');
-var utils = require('../shared/utils.js');
+var GameController = require('../shared/GameController');
+var Player = require('../shared/Player');
+var utils = require('../shared/utils');
+var dynamics = require('../shared/dynamics');
 var factory = require('./serverFactory');
 
 // interval at which to update the clients
@@ -15,7 +16,9 @@ module.exports = ServerPlayerController = function (serverGame, serverSocket) {
   
   this.socket = serverSocket;
   
-  this.player = new Player(this.socket.id, this.game, { });
+  this.player = new Player(this.socket.id, factory, { 
+    buffersize: CLIENT_UPDATE_INTERVAL * 3
+  });
   this.game.addPlayer(this.player);
   
   this.socket.on('playerinput', utils.bind(this, this.handlePlayerinput));
@@ -82,12 +85,40 @@ ServerPlayerController.prototype.handlePlayerinput = function (data) {
     
     this.player.applyInput(input);
     this.player.updatePosition(delta);
-    this.player.gun.update(delta, timeOfInput);
+    this.player.update(delta, timeOfInput);
+    this.player.storeState(timeOfInput);
     if (this.player.gun.firing) {
-      console.log(this.player.id + ' is firing'); 
+      this.shoot(this.player.gun.shot, timeOfInput);
     }
   }  
   
   this.player.lastClientUpdate = data.clientTime;
   this.player.lastServerUpdate = Date.now();
 };
+
+
+ServerPlayerController.prototype.shoot = function (shot, time) {
+  console.log(this.player.id + ' is firing');
+  
+  var s = undefined;
+  var victim = undefined;
+  for (var i = 0; i < this.game.players.length; i++) {
+    var enemy = this.game.players[i];
+    if (enemy !== this.player) {
+      var pastState = enemy.stateBuffer.get(time);
+      var sEnemy = dynamics.collidePointCircle(shot.origin, shot.track, pastState.position, enemy.boundingRadius);
+      if (sEnemy && (s === undefined || s > sEnemy)) {
+        s = sEnemy;
+        victim = enemy;
+      }
+    }
+  }
+  
+  if (victim) {
+    victim.health -= 20;
+  }
+  
+};
+
+
+

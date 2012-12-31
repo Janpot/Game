@@ -19,9 +19,12 @@ module.exports = ClientPlayerController = function (clientGame, clientSocket) {
   this.height = 0;
   this.socket = clientSocket;
   this.player = new ClientPlayer(this.socket.socket.sessionid, factory, {
-    position: new THREE.Vector2(0, 0)
+    position: new THREE.Vector2(0, 0),
+    autoUpdate: true
   });
+  
   this.game.addPlayer(this.player);
+  
   this.controls = new Controls(this.game);
   
   this.inputBuffer = [];
@@ -79,16 +82,6 @@ ClientPlayerController.prototype.sendInputBuffer = function () {
 ClientPlayerController.prototype.setSize = function(width, height) {
   this.controls.setSize(width, height);
 };
-
-// returns the serverupdate sent on [time]
-ClientPlayerController.prototype.getServerUpdate = function(time) {
-  for (var i = 0; i < this.pendingUpdates.length; i++) {
-    var update = this.pendingUpdates[i];
-    if (update.updateTime === time) {
-      return update;
-    }
-  };
-};
   
   
 
@@ -99,42 +92,28 @@ ClientPlayerController.prototype.handleCorrections = function(serverGame) {
     return;
   };
   this.lastCorrectionTime = serverGame.player.updateTime;
-  
-  var storedUpdate = this.getServerUpdate(serverGame.player.updateTime);
 
   // clean up out of date pending updates
   this.pendingUpdates = this.pendingUpdates.filter(function (update) {
     return update.updateTime > serverGame.player.updateTime;
   });
   
-  var serverPlayerPosition = serverGame.player.state.position;  
-  var xDifference = Math.abs(serverPlayerPosition.x - storedUpdate.position.x);
-  var yDifference = Math.abs(serverPlayerPosition.y - storedUpdate.position.y);
-  if (xDifference < CORRECTION_DELTA  && yDifference < CORRECTION_DELTA) {
-    // no correction required
-    console.log('no correction required');
-  } else {
-    // apply al input since last update
-    console.log('correcting...');
-    
-    // apply pending server updates
-    this.player.position.copy(serverPlayerPosition);
-    for (var i = 0; i < this.pendingUpdates.length; i++) {
-      var update = this.pendingUpdates[i];
-      for (var j = 0; j < update.sentInput.length; j++) {
-        var inputData = update.sentInput[j];
-        this.player.applyInput(inputData.input);
-        this.player.updatePosition(inputData.delta);
-      }
-    }
-    
-    // apply current inputbuffer
-    for (var i = 0; i < this.inputBuffer.length; i++) {
-      var inputData = this.inputBuffer[i];
+  // apply pending server updates
+  this.player.unserializeState(serverGame.player.state);
+  for (var i = 0; i < this.pendingUpdates.length; i++) {
+    var update = this.pendingUpdates[i];
+    for (var j = 0; j < update.sentInput.length; j++) {
+      var inputData = update.sentInput[j];
       this.player.applyInput(inputData.input);
       this.player.updatePosition(inputData.delta);
     }
-    
+  }
+  
+  // apply current inputbuffer
+  for (var i = 0; i < this.inputBuffer.length; i++) {
+    var inputData = this.inputBuffer[i];
+    this.player.applyInput(inputData.input);
+    this.player.updatePosition(inputData.delta);
   }
   
 };

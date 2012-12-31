@@ -49,6 +49,7 @@ PlayerstateBuffer.prototype.interpolate = function (state1, state2, s) {
     lookDir: {
       x: utils.interpolate(state1.lookDir.x, state2.lookDir.x, s),
       y: utils.interpolate(state1.lookDir.y, state2.lookDir.y, s)
-    }
+    },
+    hp: utils.interpolate(state1.hp, state2.hp, s)
   }
 };

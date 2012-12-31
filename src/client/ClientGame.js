@@ -8,8 +8,6 @@ var EnemiesController = require('./EnemiesController.js');
 var GameStats = require('./GameStats.js');
 
 
-var PHYSICS_LOOP = 16; // ms
-
 var ClientGame;
 module.exports = ClientGame = function (cfg) {
   Game.call(this, cfg);
@@ -65,8 +63,7 @@ ClientGame.prototype.start = function(domElement, socket) {
   this.playerController = new ClientPlayerController(this, this.socket);
   this.enemiesController = new EnemiesController(this, this.socket);  
   
-  // start gameloop
-  setInterval(utils.bind(this, this.update), PHYSICS_LOOP);
+  Game.prototype.start.call(this);
   
   // start renderloop  
   this.render();
@@ -140,14 +137,11 @@ ClientGame.prototype.isVisible = function (position) {
 };
 
 // update the world with a timeframe of delta
-ClientGame.prototype.update = function () {
+ClientGame.prototype.update = function (delta, now) {
   this.stats.measureGameloop(utils.bind(this, function() {
-    var now = Date.now();
-    var delta = PHYSICS_LOOP / 1000;
+    Game.prototype.update.call(this, delta, now);
     this.playerController.update(delta, now);
     this.enemiesController.update(delta, now);
-    
-    this.updateObjects(delta, now);
   }));
 };
 
@@ -207,8 +201,8 @@ ClientGame.prototype.setHidingblocksVisible = function (visible) {
 // set the visibility of the objects
 // REMARK(Jan): a bit hacky but removed when rendering is done properly
 ClientGame.prototype.setObjectsVisible = function (visible) {
-  for (var i = 0; i < this.updatedObjects.length; i++) {
-    var object = this.updatedObjects[i];
+  for (var i = 0; i < this.objects.length; i++) {
+    var object = this.objects[i];
     if (object.setVisible) {
       object.setVisible(visible);
     }
