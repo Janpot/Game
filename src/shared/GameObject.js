@@ -19,7 +19,11 @@ module.exports = GameObject = function (factory) {
   this.expired = false;
   
   // use this to signal that this object should be updated in de gameloop
-  this.autoUpdate = false;
+  this.autoUpdate = true;
+  
+  // indicates where in the gameloop this object should be updated
+  // higher priority = updated first
+  this.priority = 0;
 };
 
 // initializes the object in a game

@@ -18,6 +18,8 @@ module.exports = ServerPlayerController = function (factory, serverSocket) {
   this.player = new Player(this.socket.id, this.factory, { 
     buffersize: CLIENT_UPDATE_INTERVAL * 3
   });
+  this.player.autoUpdate = false;
+  this.player.priority = this.priority - 1;
   
   this.socket.on('disconnect', utils.bind(this, function () {
     this.expired = true;

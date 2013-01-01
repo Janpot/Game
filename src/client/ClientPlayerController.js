@@ -20,17 +20,11 @@ module.exports = ClientPlayerController = function (factory, clientSocket) {
   this.player = new ClientPlayer(this.socket.socket.sessionid, this.factory, {
     position: new THREE.Vector2(0, 0)
   });
-  this.player.autoUpdate = true;
-  /*
-  this.game.addPlayer(this.player);
+  this.player.priority = this.priority - 1;
   
-  this.controls = new Controls(this.game);
-  */
   this.inputBuffer = [];
   this.pendingUpdates = [];
   this.lastCorrectionTime = 0;
-  
-  this.autoUpdate = true;
 };
 
 ClientPlayerController.prototype = Object.create(GameObject.prototype);

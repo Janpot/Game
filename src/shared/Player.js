@@ -57,6 +57,7 @@ module.exports = Player = function (id, factory, cfg) {
   this.health = 100;
   
   this.gun = new this.factory.Gun(this.factory);
+  this.gun.autoUpdate = false;
   
 };
 

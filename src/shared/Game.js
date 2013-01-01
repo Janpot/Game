@@ -44,6 +44,9 @@ Game.prototype.update = function (delta, now) {
       return true;
     }
   });
+  this.objects.sort(function () {
+    return -this.priority;
+  });
   for (var i = 0; i < this.objects.length; i++) {
     var object = this.objects[i];
     if (object.autoUpdate) {

@@ -16,8 +16,6 @@ module.exports = EnemiesController = function (factory, clientSocket) {
   
   this.socket = clientSocket;
   this.enemies = {};
-  
-  this.autoUpdate = true;
 };
 
 EnemiesController.prototype = Object.create(GameObject.prototype);
@@ -45,9 +43,10 @@ EnemiesController.prototype.addPlayer = function (remote) {
   var enemy = new ClientPlayer(remote.id, this.factory, {
     color: 0x0000FF,
     buffersize: MAX_BUFFERSIZE,
-    state: remote.state,
-    autoUpdate: false
+    state: remote.state
   });
+  enemy.autoUpdate = false;
+  enemy.priority = this.priority - 1;
   this.enemies[remote.id] = enemy;
   this.game.addPlayer(enemy);
   
