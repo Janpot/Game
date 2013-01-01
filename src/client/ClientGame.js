@@ -1,11 +1,11 @@
 var Q = require('q');
 var twoD = require('../shared/twoD');
-var Game = require('../shared/Game.js');
-var utils = require('../shared/utils.js');
-var ClientWall = require('./ClientWall.js');
-var ClientPlayerController = require('./ClientPlayerController.js');
-var EnemiesController = require('./EnemiesController.js');
-var GameStats = require('./GameStats.js');
+var Game = require('../shared/Game');
+var utils = require('../shared/utils');
+var ClientWall = require('./ClientWall');
+var ClientPlayerController = require('./ClientPlayerController');
+var EnemiesController = require('./EnemiesController');
+var GameStats = require('./GameStats');
 var factory = require('./clientFactory');
 
 

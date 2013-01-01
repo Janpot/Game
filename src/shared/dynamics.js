@@ -1,4 +1,4 @@
-var utils = require('./utils.js');
+var utils = require('./utils');
 var twoD = require('./twoD');
 
 // IMPORTANT: All dynamics functions assume colliding objects are not intersecting or touching at the

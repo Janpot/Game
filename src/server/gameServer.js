@@ -1,4 +1,4 @@
-var ServerPlayerController = require('./ServerPlayerController.js');
+var ServerPlayerController = require('./ServerPlayerController');
 var factory = require('./serverFactory');
 
 var games = {};

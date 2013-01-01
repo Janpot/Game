@@ -1,5 +1,5 @@
-var utils = require('../shared/utils.js');
-var Wall = require('../shared/Wall.js');
+var utils = require('../shared/utils');
+var Wall = require('../shared/Wall');
 
 // Describes a wall in the world for the client
 var ClientWall;

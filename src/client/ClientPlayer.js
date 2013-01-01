@@ -1,4 +1,4 @@
-var Player = require('../shared/Player.js');
+var Player = require('../shared/Player');
 var utils = require('../shared/utils');
 
 var ClientPlayer = module.exports = function (id, factory, cfg) {

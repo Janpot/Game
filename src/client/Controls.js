@@ -1,4 +1,4 @@
-var utils = require('../shared/utils.js');
+var utils = require('../shared/utils');
 var twoD = require('../shared/twoD');
 
 

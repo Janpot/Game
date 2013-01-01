@@ -1,4 +1,4 @@
-var utils = require('./utils.js');
+var utils = require('./utils');
 
 // A buffer to store items with a timestamp
 // the [maximum] time that is kept in the buffer, ignored when there is only one item

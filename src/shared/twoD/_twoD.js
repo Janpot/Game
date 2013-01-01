@@ -1,4 +1,4 @@
 module.exports = {
-  Vector: require('./Vector.js'),
-  Rectangle: require('./Rectangle.js')
+  Vector: require('./Vector'),
+  Rectangle: require('./Rectangle')
 };

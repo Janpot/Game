@@ -1,4 +1,4 @@
-var ClientGame = require('./ClientGame.js');
+var ClientGame = require('./ClientGame');
 
 var viewport = document.getElementById('viewport');
 var loadingIndicator = document.getElementById('loadingIndicator');

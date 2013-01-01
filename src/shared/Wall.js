@@ -1,4 +1,4 @@
-var utils = require('./utils.js');
+var utils = require('./utils');
 var twoD = require('./twoD');
 
 // Describes a wall in the world, a wall is basically a 2D polygon in the XYplane

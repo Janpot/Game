@@ -1,4 +1,4 @@
-var utils = require('./utils.js');
+var utils = require('./utils');
 
 // A buffer to store items with a timestamp
 // the [maximum] time that is kept in the buffer, ignored when there is only one item
@@ -26,7 +26,9 @@ PlayerstateBuffer.prototype.add = function (playerstate, time) {
 // interpolate a state from the buffer with the desired time
 PlayerstateBuffer.prototype.get = function (time) {    
   var length = this.buffer.length;
-  if (time <= this.buffer[0].time) {
+  if (length <= 0) {
+    return undefined;
+  } else if (time <= this.buffer[0].time) {
     return this.buffer[0].item;
   } else if (time >= this.buffer[length - 1].time) {
     return this.buffer[length - 1].item;
