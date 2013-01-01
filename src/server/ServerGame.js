@@ -1,12 +1,11 @@
 var http = require('http');
 var Q = require('q');
 var twoD = require('../shared/twoD');
-var Game = require('../shared/Game.js');
-var Wall = require('../shared/Wall.js');
-var utils = require('../shared/utils.js');
-var Player = require('../shared/Player.js');
-var config = require('./config.js');
-
+var Game = require('../shared/Game');
+var Wall = require('../shared/Wall');
+var utils = require('../shared/utils');
+var Player = require('../shared/Player');
+var config = require('./config');
 
 // gets json from this server and parses it. returns a promise.
 // TODO(Jan): Move this to a dedicated library?

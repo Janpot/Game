@@ -1,9 +1,8 @@
-var utils = require('../shared/utils.js');
+var GameObject = require('../shared/GameObject');
+var utils = require('../shared/utils');
 var twoD = require('../shared/twoD');
-var ClientPlayer = require('./ClientPlayer.js');
-var Controls = require('./Controls.js');
-var GameController = require('../shared/GameController.js');
-var factory = require('./clientFactory');
+var ClientPlayer = require('./ClientPlayer');
+var Controls = require('./Controls');
 
 var UPDATE_INTERVAL = 50; // ms, interval at which to update the server
 var ENEMY_OFFSET = 100; // ms behind actual state
@@ -12,34 +11,45 @@ var CORRECTION_DELTA = 0.1; // minimum deviationto make a correction
 
 // controls for a player
 var ClientPlayerController;
-module.exports = ClientPlayerController = function (clientGame, clientSocket) {
-  GameController.call(this, clientGame);
+module.exports = ClientPlayerController = function (factory, clientSocket) {
+  GameObject.call(this, factory);
   
   this.width = 0;
   this.height = 0;
   this.socket = clientSocket;
-  this.player = new ClientPlayer(this.socket.socket.sessionid, factory, {
+  this.player = new ClientPlayer(this.socket.socket.sessionid, this.factory, {
     position: new THREE.Vector2(0, 0)
   });
   this.player.autoUpdate = true;
-  
+  /*
   this.game.addPlayer(this.player);
   
   this.controls = new Controls(this.game);
-  
+  */
   this.inputBuffer = [];
   this.pendingUpdates = [];
   this.lastCorrectionTime = 0;
   
-  this.socket.on('gamestate', utils.bind(this, this.handleCorrections)); 
+  this.autoUpdate = true;
+};
+
+ClientPlayerController.prototype = Object.create(GameObject.prototype);
+
+ClientPlayerController.prototype.initialize = function (game) {
+  GameObject.prototype.initialize.apply(this, arguments);
   
+  this.controls = new Controls(this.game);
+  this.game.addPlayer(this.player);
+  
+  this.socket.on('gamestate', utils.bind(this, this.handleCorrections)); 
   setInterval(utils.bind(this, this.sendInputBuffer), UPDATE_INTERVAL);
 };
 
-ClientPlayerController.prototype = Object.create(GameController.prototype);
 
 // update the game state according to the controls
 ClientPlayerController.prototype.update = function (delta, now) {  
+  GameObject.prototype.update.apply(this, arguments);
+  
   var input = this.controls.getInput();  
   this.player.applyInput(input, delta);
     

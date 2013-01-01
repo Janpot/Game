@@ -18,7 +18,7 @@ module.exports = GameObject = function (factory) {
   // use this property to expire the object
   this.expired = false;
   
-  // use this to signal this object should be updated in de gameloop
+  // use this to signal that this object should be updated in de gameloop
   this.autoUpdate = false;
 };
 

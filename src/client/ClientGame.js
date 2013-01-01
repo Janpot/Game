@@ -6,11 +6,14 @@ var ClientWall = require('./ClientWall.js');
 var ClientPlayerController = require('./ClientPlayerController.js');
 var EnemiesController = require('./EnemiesController.js');
 var GameStats = require('./GameStats.js');
+var factory = require('./clientFactory');
 
 
 var ClientGame;
 module.exports = ClientGame = function (cfg) {
   Game.call(this, cfg);
+  
+  this.factory = factory;
   
   this.domElement;
   this.stats;
@@ -62,8 +65,10 @@ ClientGame.prototype.start = function(domElement, socket) {
   this.stats.setVisibility(true);
   
   // initialize controllers
-  this.playerController = new ClientPlayerController(this, this.socket);
-  this.enemiesController = new EnemiesController(this, this.socket);  
+  this.playerController = new ClientPlayerController(this.factory, this.socket);
+  this.addObject(this.playerController);
+  this.enemiesController = new EnemiesController(this.factory, this.socket);  
+  this.addObject(this.enemiesController);
   
   Game.prototype.start.call(this);
   
@@ -142,8 +147,6 @@ ClientGame.prototype.isVisible = function (position) {
 ClientGame.prototype.update = function (delta, now) {
   this.stats.measureGameloop(utils.bind(this, function() {
     Game.prototype.update.call(this, delta, now);
-    this.playerController.update(delta, now);
-    this.enemiesController.update(delta, now);
   }));
 };
 

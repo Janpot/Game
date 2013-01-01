@@ -1,8 +1,7 @@
-var GameController = require('../shared/GameController');
+var GameObject = require('../shared/GameObject');
 var Player = require('../shared/Player');
 var utils = require('../shared/utils');
 var dynamics = require('../shared/dynamics');
-var factory = require('./serverFactory');
 
 // interval at which to update the clients
 var CLIENT_UPDATE_INTERVAL = 50;
@@ -11,14 +10,25 @@ var PHYSICS_DELTA = 16; // ms, delta to simulate game on the server
 
 // Controller for a player on the server
 var ServerPlayerController;
-module.exports = ServerPlayerController = function (serverGame, serverSocket) {
-  GameController.call(this, serverGame);
+module.exports = ServerPlayerController = function (factory, serverSocket) {
+  GameObject.call(this, factory);
   
   this.socket = serverSocket;
   
-  this.player = new Player(this.socket.id, factory, { 
+  this.player = new Player(this.socket.id, this.factory, { 
     buffersize: CLIENT_UPDATE_INTERVAL * 3
   });
+  
+  this.socket.on('disconnect', utils.bind(this, function () {
+    this.expired = true;
+  }));
+};
+
+ServerPlayerController.prototype = Object.create(GameObject.prototype);
+
+ServerPlayerController.prototype.initialize = function (game) {
+  GameObject.prototype.initialize.apply(this, arguments);
+  
   this.game.addPlayer(this.player);
   
   this.socket.on('playerinput', utils.bind(this, this.handlePlayerinput));
@@ -28,10 +38,9 @@ module.exports = ServerPlayerController = function (serverGame, serverSocket) {
   // initialize the client
   var initialGamestate = this.serializeGame();
   initialGamestate.level = this.game.level;
-  this.socket.emit('initialize', initialGamestate);
+  this.socket.emit('initialize', initialGamestate);  
 };
 
-ServerPlayerController.prototype = Object.create(GameController.prototype);
 
 ServerPlayerController.prototype.handlePlayerstate = function (remote) {
   this.player.unserializeState(remote);     
@@ -72,6 +81,8 @@ ServerPlayerController.prototype.destroy = function () {
   this.game.removePlayer(this.socket.id);  
   clearInterval(this.updateInterval);
   this.socket.removeAllListeners();
+  
+  GameObject.prototype.destroy.apply(this, arguments);
 };
 
 
