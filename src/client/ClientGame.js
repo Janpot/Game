@@ -7,6 +7,7 @@ var ClientPlayerController = require('./ClientPlayerController');
 var EnemiesController = require('./EnemiesController');
 var GameStats = require('./GameStats');
 var factory = require('./clientFactory');
+var HUD = require('./HUD');
 
 
 var ClientGame;
@@ -67,6 +68,11 @@ ClientGame.prototype.start = function(domElement, socket) {
   // initialize controllers
   this.playerController = new ClientPlayerController(this.factory, this.socket);
   this.addObject(this.playerController);
+  
+  this.HUD = new HUD(this.factory, this.playerController.player);
+  this.domElement.appendChild(this.HUD.domElement);
+  this.addObject(this.HUD);
+  
   this.enemiesController = new EnemiesController(this.factory, this.socket);  
   this.addObject(this.enemiesController);
   
