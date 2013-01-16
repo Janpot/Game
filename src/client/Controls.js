@@ -136,7 +136,7 @@ Controls.prototype.setSize = function (width, height) {
 };
 
 // return the current input
-Controls.prototype.getInput = function () {
+Controls.prototype.getInput = function (obj) {
   var raycaster = this._projector.pickingRay(this.mousePos.clone(), this.camera);
   var target = utils.intersectXYPlane(raycaster.ray);
   

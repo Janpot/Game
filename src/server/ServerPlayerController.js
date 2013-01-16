@@ -1,7 +1,6 @@
 var GameObject = require('../shared/GameObject');
-var Player = require('../shared/Player');
+var ServerPlayer = require('./ServerPlayer');
 var utils = require('../shared/utils');
-var dynamics = require('../shared/dynamics');
 
 // interval at which to update the clients
 var CLIENT_UPDATE_INTERVAL = 50;
@@ -15,7 +14,7 @@ module.exports = ServerPlayerController = function (factory, serverSocket) {
   
   this.socket = serverSocket;
   
-  this.player = new Player(this.socket.id, this.factory, { 
+  this.player = new ServerPlayer(this.socket.id, this.factory, { 
     buffersize: CLIENT_UPDATE_INTERVAL * 3
   });
   this.player.autoUpdate = false;
@@ -100,39 +99,8 @@ ServerPlayerController.prototype.handlePlayerinput = function (data) {
     this.player.update(delta, timeOfInput);
     
     this.player.storeState(timeOfInput);
-    if (this.player.gun.firing) {
-      console.log(this.player.id + ' is firing');
-      this.shoot(this.player.gun.shot, timeOfInput);
-    }
   }  
   
   this.player.lastClientUpdate = data.clientTime;
   this.player.lastServerUpdate = Date.now();
 };
-
-
-ServerPlayerController.prototype.shoot = function (shot, time) {
-  console.log(this.player.id + ' is firing');
-  
-  var s = undefined;
-  var victim = undefined;
-  for (var i = 0; i < this.game.players.length; i++) {
-    var enemy = this.game.players[i];
-    if (enemy !== this.player) {
-      var pastState = enemy.stateBuffer.get(time);
-      var sEnemy = dynamics.collidePointCircle(shot.origin, shot.track, pastState.position, enemy.boundingRadius);
-      if (sEnemy && (s === undefined || s > sEnemy)) {
-        s = sEnemy;
-        victim = enemy;
-      }
-    }
-  }
-  
-  if (victim) {
-    victim.health = Math.max(victim.health - 20, 0);
-  }
-  
-};
-
-
-

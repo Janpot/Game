@@ -14,6 +14,7 @@ This game wouldn't be possible without these well known libraries:
 - [Express](http://expressjs.com/)
 - [socket.io](http://socket.io/)
 - [Browserify](https://github.com/substack/node-browserify)
+- [q](https://github.com/kriskowal/q)
 
 ## License
 
