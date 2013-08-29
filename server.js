@@ -2,17 +2,7 @@ var express = require('express');
 var config = require('./src/server/config.js');
 var app = express();
 
-var browserify = require('browserify');
-var bundle = browserify({
-  entry: './src/client/client.js',
-  mount: '/client.js',
-  watch: true,
-  debug: true
-});
-
-bundle.on('syntaxError', function(err) {
-  console.log(err);
-});
+var browserify = require('browserify-middleware');
 
 app.configure(function(){
   app.get('/game/:id', function(request, response) { 
@@ -22,7 +12,9 @@ app.configure(function(){
     response.sendfile('./src/room.html');
   });
   app.use(express.static(__dirname + '/src/server/public'));
-  app.use(bundle);
+  app.get('/client.js', browserify('./src/client/client.js', {
+    debug: true
+  }));
 });
 
 console.log('Static file server running at http://localhost:' + config.port);
